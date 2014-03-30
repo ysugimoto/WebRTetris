@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>Tetris</title>
+        <link rel="stylesheet" type="text/css" href="css/application.css" />
+    </head>
+    <body>
+        <div id="game">
+            <div class="stage player"></div>
+            <div class="info">
+                <div class="next">
+                    <h3>next</h3>
+                    <canvas id="nextBlock" width="160" height="160"></canvas>
+                </div>
+                <dlv class="score">
+                    <h3>lines</h3>
+                    <p id="linesValue">&nbsp;</p>
+                    <h3>score</h3>
+                    <p id="scoreValue">&nbsp;</p>
+                    <h3>level</h3>
+                    <p id="levelValue">&nbsp;</p>
+                </dlv>
+                <div class="rtcLogo"></div>
+            </div>
+            <div class="stage enemy"></div>
+        </div>
+        <div id="layer">
+            <p>Game over</p>
+        </div>
+        <script src="js/application.js"></script>
+    </body>
+</html>
