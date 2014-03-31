@@ -17,7 +17,7 @@
 global.Tetris = Tetris;
 global.stage  = Stage;
 
-Tetris.start(document.querySelector('.player'), 300, 600, true);
+Tetris.start(document.querySelector('.player'), 300, 600);
 
 
 document.body.style.height = window.innerHeight + 'px';
