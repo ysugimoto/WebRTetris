@@ -292,7 +292,10 @@ PeerConnection.prototype.generateUUID = function() {
 
 PeerConnection.prototype.initDataChannel = function() {
     this.dataChannel.onmessage = function(evt) {
-        GameEvent.trigger('stageTransfer', evt.data);
+        // Check strict data-uri string transfered
+        if ( evt.data ) {
+            GameEvent.trigger('stageTransfer', evt.data);
+        }
     };
 };
 
