@@ -99,3 +99,41 @@ body {
     }
 }
 
+#player {
+    position: absolute;
+    bottom: 0;
+    right: 10px;
+    width: 180px;
+
+    ul {
+        list-style: none outside;
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+        text-align: center;
+        padding: 3px 6px;
+        font-size: 12px;
+        background-color: #333;
+        color: #fff;
+        cursor: pointer;
+
+        &:hover {
+            color: #333;
+            background-color: #fff;
+        }
+    }
+}
+
+.message {
+    width: 860px;
+    margin: 10px auto;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    text-align: center;
+    border: solid 1px #ff0;
+    border-radius: 8px;
+    color: #ff0;
+    font-size: 14px;
+}

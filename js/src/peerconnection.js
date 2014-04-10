@@ -23,20 +23,33 @@ PeerConnection = Event.implement(function() {
     this.webSocket        = new WebSocket(Config.WEBSOCKET_SERVER);
     this.webSocket.onopen = this.setWebSocketEvents.bind(this);
     this.dataChannel      = null;
+    this.remotePlayer     = null;
 
     this.setPeerConnectionEvents();
+
+    // Game connection event
+    GameEvent.on('playerSelected', function(evt) {
+        var player = evt.data;
+
+        this.sendOffer(player.uuid);
+    }.bind(this));
 });
 
-PeerConnection.prototype.sendOffer = function() {
+PeerConnection.prototype.sendOffer = function(uuid) {
     var peer = this.peer,
-        ws   = this.webSocket;
+        ws   = this.webSocket,
+        me   = this.uuid;
 
     this.dataChannel = peer.createDataChannel('stageImageTransfer');
     this.initDataChannel();
 
     peer.createOffer(function(sdp) {
         peer.setLocalDescription(sdp, function() {
-            ws.send(JSON.stringify({"sdp": sdp}));
+            ws.send(JSON.stringify({
+                "sdp":  sdp,
+                "from": me,
+                "to":   uuid
+            }));
         });
     }, error);
 };
@@ -44,6 +57,7 @@ PeerConnection.prototype.sendOffer = function() {
 PeerConnection.prototype.setWebSocketEvents = function() {
     var peer = this.peer,
         ws   = this.webSocket,
+        uuid = this.uuid,
         that = this;
 
     ws.onmessage = function(evt) {
@@ -51,35 +65,51 @@ PeerConnection.prototype.setWebSocketEvents = function() {
             sdp,
             candidate;
 
-        if ( peer.remoteDescription ) {
-            // alredy connected peer.
-            //return;
+        if ( message.uuids ) {
+            PlayerList.update(message.uuids);
         }
 
-        if ( message.sdp ) {
+        if ( that.remotePlayer !== null ) {
+            return;
+        }
+
+        if ( message.sdp && message.to && message.to === uuid ) {
             sdp = new RTCSessionDescription(message.sdp);
+            that.remotePlayer = message.from;
             if ( sdp.type === 'offer' ) {
                 peer.setRemoteDescription(sdp, function() {
                     peer.createAnswer(function(localSdp) {
                         peer.setLocalDescription(localSdp, function() {
-                            ws.send(JSON.stringify({"sdp": localSdp}));
+                            ws.send(JSON.stringify({
+                                "sdp":  localSdp,
+                                "from": uuid,
+                                "to":   that.remotePlayer
+                            }));
                         });
                     }, error);
                 });
             } else {
-                peer.setRemoteDescription(sdp);
-                GameEvent.trigger('peerConnected');
+                peer.setRemoteDescription(sdp, function() {
+                    GameEvent.trigger('peerConnected');
+                });
             }
         } else if ( message.candidate ) {
             candidate = new RTCIceCandidate(message.candidate);
             peer.addIceCandidate(candidate);
-        } else if ( message.uuid ) {
-            console.log('offer send');
-            that.sendOffer();
         }
     };
 
-    ws.send(JSON.stringify({'uuid': this.uuid}));
+    ws.send(JSON.stringify({
+        'uuid': uuid,
+        'type': 'add'
+    }));
+
+    ws.onclose = function() {
+        ws.send(JSON.stringify({
+            'uuid': uuid,
+            'type': 'remove'
+        }));
+    };
 };
 
 PeerConnection.prototype.setPeerConnectionEvents = function() {

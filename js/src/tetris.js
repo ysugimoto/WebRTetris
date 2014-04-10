@@ -26,7 +26,6 @@ Tetris.start = function(stage, width, height, isDuel) {
 
     if ( isDuel ) {
         game.peer = window.peer = new PeerConnection();
-        Layer.show('waiting...');
         GameEvent.on('peerConnected', function() {
             var CountDown = Ticker.implement(function() {
                 var times = 4,
@@ -66,12 +65,14 @@ Tetris.prototype.initialize = function() {
     this.block.draw(this.ctx);
     this.setLevel(1);
 
-    this.tick(this.timerUpdate.bind(this));
-    this.setGameEvents();
+    if ( ! this.controller ) {
+        this.tick(this.timerUpdate.bind(this));
+        this.setGameEvents();
 
-    Stage.addQueue(this);
+        Stage.addQueue(this);
 
-    this.controller = Controller.create();
+        this.controller = Controller.create();
+    }
 };
 
 Tetris.prototype.timerUpdate = function() {

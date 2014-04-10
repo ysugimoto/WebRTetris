@@ -5,6 +5,7 @@
 //= require ticker.js
 //= require gameevent.js
 //= require peerconnection.js
+//= require playerlist.js
 //= require stage.js
 //= require block.js
 //= require controller.js
