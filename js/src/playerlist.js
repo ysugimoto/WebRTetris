@@ -21,7 +21,7 @@ function update(players) {
         i    = 0,
         player,
         li;
-    
+
     for ( ; i < size; ++i ) {
         player = players[i];
         li = doc.createElement('li');

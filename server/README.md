@@ -1,14 +1,9 @@
-RTCPeerConnectionSample(Server side)
+WebRTetris(Server side)
 =======================
 
-WebRTC peer connection video chat sample ( chrome only ) at server-side
+Network play "Tetris" using WebRTC-DataChannel API at server-side
 
 ### How to build
-Checkout this project
-
-```
-git clone https://github.com/ysugimoto/RTCPeerConnectionSample.git
-```
 
 Install depend npm modules
 
@@ -35,3 +30,7 @@ Case: pm2
 npm install -g pm2
 pm2 start server.js
 ```
+
+And access to local
+
+http://localhost:8889

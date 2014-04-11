@@ -44,9 +44,17 @@ config.BLOCK_COLORS[7] = '#cc9c28';
 
 
 // Server configuration
-config.ICE_SERVER       = {'iceServers': [{'url': 'stun:stun.l.goolge.com:19302'}]};
-config.WEBSOCKET_SERVER = 'ws://localhost:8124';
+config.ICE_SERVER     = {'iceServers': [{'url': 'stun:stun.l.goolge.com:19302'}]};
+config.HOST           = 'localhost';
+config.HTTP_PORT      = 8889;
+config.WEBSOCKET_PORT = 8124;
 
 Config = config;
+
+// node config
+if ( typeof exports !== 'undefined' ) {
+    module.exports = config;
+}
+
 
 })();
