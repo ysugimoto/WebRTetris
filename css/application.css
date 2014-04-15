@@ -9,7 +9,7 @@ body {
   width: 860px;
   height: 620px;
   padding: 20px;
-  margin: 100px auto 0 auto;
+  margin: 0 auto;
   background-color: rgba(64, 64, 64, 0.8);
   border: solid 10px rgba(0, 0, 0, 0.9); }
 
@@ -80,33 +80,39 @@ body {
   #layer.show {
     display: block; }
 
-#player {
+#players {
   position: absolute;
   bottom: 0;
   right: 10px;
-  width: 180px; }
-  #player ul {
+  width: 200px; }
+  #players ul {
     list-style: none outside;
     margin: 0;
     padding: 0; }
-  #player li {
+  #players li {
     text-align: center;
-    padding: 3px 6px;
-    font-size: 12px;
+    padding: 6px;
+    font-size: 14px;
     background-color: #333;
     color: #fff;
-    cursor: pointer; }
-    #player li:hover {
+    cursor: pointer;
+    border: solid 1px #fff; }
+    #players li:hover {
       color: #333;
       background-color: #fff; }
+    #players li:last-child {
+      border-bottom: none; }
 
 .message {
   width: 860px;
-  margin: 10px auto;
+  margin: 0 0 0 -430px;
   background: rgba(255, 255, 255, 0.9);
   padding: 8px;
   text-align: center;
-  border: solid 1px #ff0;
-  border-radius: 8px;
-  color: #ff0;
-  font-size: 14px; }
+  border: solid 2px #f00;
+  border-radius: 6px;
+  color: #f00;
+  font-size: 18px;
+  position: absolute;
+  top: 10px;
+  left: 50%; }

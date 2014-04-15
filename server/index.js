@@ -1,16 +1,8 @@
 var ws     = require('websocket.io');
-var http   = require('http');
-var fs     = require('fs');
-var url    = require('url');
-var path   = require('path');
 var config = require('../js/src/config');
+var fork   = require('child_process').fork;
+var path   = require('path');
 var server = ws.listen(config.WEBSOCKET_PORT);
-
-// constant document root
-var DOCUMENT_ROOT = path.resolve(__dirname, '../');
-var NOT_FOUND     = '404 NotFound.';
-
-console.log('DOCUMENT_ROOT is "' + DOCUMENT_ROOT + '"');
 
 var players = [];
 
@@ -21,17 +13,19 @@ server.on('connection', function(socket) {
         try {
             var json = JSON.parse(data),
                 index;
-
+            
             // user add
             if ( json.uuid ) {
-                index = players.indexOf(json.uuid);
+                index = findPlayer(json.uuid);
                 if ( json.type === 'add' && index === -1 ) {
-                    players.push(json.uuid);
+                    console.log('player added');
+                    players.push({'uuid': json.uuid, 'name': json.name});
                     server.clients.forEach(function(client) {
                         client && client.send(JSON.stringify({'uuids': players}));
                     });
                 }
                 else if ( json.type === 'remove' && index !== -1 ) {
+                    console.log('player removed');
                     players.splice(index, 1);
                     server.clients.forEach(function(client) {
                         client && client.send(JSON.stringify({'uuids': players}));
@@ -53,51 +47,29 @@ server.on('connection', function(socket) {
 });
 console.log('WebSocket listen: ' + config.HOST + ':' + config.WEBSOCKET_PORT);
 
-http.createServer(function(request, response) {
-    var requestPath = url.parse(request.url).pathname,
-        requestFile = DOCUMENT_ROOT +((requestPath === '/') ? '/index.html' : requestPath),
-        header      = {},
-        body        = '';
+var _http = fork(process.cwd() + '/server/http.js', [], {'cwd': process.cwd() + '/server'});
+process.on('SIGINT', function() {
+    console.log('SIGINT');
+    _http.kill('SIGINT');
+    process.exit();
+});
 
-console.log('Request handled: ' + requestPath);
+process.on('uncaughtException', function(e) {
+    console.log('Caught Error');
+});
 
-    if ( ! fs.existsSync(requestFile) ) {
-        response.writeHead(404, {
-            "Content-Type": 'text/plain',
-            "Content-Length": NOT_FOUND.length
-        });
-        response.end(NOT_FOUND, 'utf8');
-        return;
+function findPlayer(uuid) {
+    var size  = players.length,
+        i     = 0,
+        index = -1;
+
+    for ( ; i < size; ++i ) {
+        if ( players[i].uuid === uuid ) {
+            index = i;
+            break;
+        }
     }
 
-    fs.readFile(requestFile, function(err, buffer) {
-        switch ( path.extname(requestFile) ) {
-            case '.html':
-                header = {"Content-Type": 'text/html'};
-                body   = buffer.toString('utf8');
-                break;
-            case '.js':
-                header = {"Content-Type": 'application/javascript'};
-                body   = buffer.toString('utf8');
-                break;
-            case '.css':
-                header = {"Content-Type": 'text/css'};
-                body   = buffer.toString('utf8');
-                break;
-            case '.jpg':
-                header = {"Content-Type": 'image/jpeg'};
-                body   = buffer;
-                break;
-            case '.png':
-                header = {"Content-Type": 'image/png'};
-                body   = buffer;
-                break;
-            default:
-                return;
-        }
+    return index;
+}
 
-        response.writeHead(200, header);
-        response.end(body);
-    });
-}).listen(config.HTTP_PORT);
-console.log('HTTP listen: ' + config.HOST + ':' + config.HTTP_PORT);

@@ -195,8 +195,10 @@ PeerConnection = Event.implement(function() {
     //} else {
         this.peer = new RTCPeerConnection(Config.ICE_SERVER);
     //}
+    
+    PlayerList.setUUID(this.uuid);
 
-    this.webSocket        = new WebSocket(Config.WEBSOCKET_SERVER);
+    this.webSocket        = new WebSocket('ws://' + Config.HOST + ':' + Config.WEBSOCKET_PORT);
     this.webSocket.onopen = this.setWebSocketEvents.bind(this);
     this.dataChannel      = null;
     this.remotePlayer     = null;
@@ -234,7 +236,8 @@ PeerConnection.prototype.setWebSocketEvents = function() {
     var peer = this.peer,
         ws   = this.webSocket,
         uuid = this.uuid,
-        that = this;
+        that = this,
+        playerName = prompt('Input your player name');
 
     ws.onmessage = function(evt) {
         var message = JSON.parse(evt.data),
@@ -245,29 +248,27 @@ PeerConnection.prototype.setWebSocketEvents = function() {
             PlayerList.update(message.uuids);
         }
 
-        if ( that.remotePlayer !== null ) {
-            return;
-        }
-
-        if ( message.sdp && message.to && message.to === uuid ) {
-            sdp = new RTCSessionDescription(message.sdp);
-            that.remotePlayer = message.from;
-            if ( sdp.type === 'offer' ) {
-                peer.setRemoteDescription(sdp, function() {
-                    peer.createAnswer(function(localSdp) {
-                        peer.setLocalDescription(localSdp, function() {
-                            ws.send(JSON.stringify({
-                                "sdp":  localSdp,
-                                "from": uuid,
-                                "to":   that.remotePlayer
-                            }));
-                        });
-                    }, error);
-                });
-            } else {
-                peer.setRemoteDescription(sdp, function() {
-                    GameEvent.trigger('peerConnected');
-                });
+        if ( message.sdp && message.to && message.to === uuid) {
+            if ( ! that.remotePlayer ) {
+                sdp = new RTCSessionDescription(message.sdp);
+                that.remotePlayer = message.from;
+                if ( sdp.type === 'offer' ) {
+                    peer.setRemoteDescription(sdp, function() {
+                        peer.createAnswer(function(localSdp) {
+                            peer.setLocalDescription(localSdp, function() {
+                                ws.send(JSON.stringify({
+                                    "sdp":  localSdp,
+                                    "from": uuid,
+                                    "to":   that.remotePlayer
+                                }));
+                            });
+                        }, error);
+                    });
+                } else if ( sdp.type === 'answer' ) {
+                    peer.setRemoteDescription(sdp, function() {
+                        GameEvent.trigger('peerConnected');
+                    });
+                }
             }
         } else if ( message.candidate ) {
             candidate = new RTCIceCandidate(message.candidate);
@@ -277,15 +278,17 @@ PeerConnection.prototype.setWebSocketEvents = function() {
 
     ws.send(JSON.stringify({
         'uuid': uuid,
+        'name': playerName || 'unknown',
         'type': 'add'
     }));
 
-    ws.onclose = function() {
+    window.onbeforeunload = function() {
         ws.send(JSON.stringify({
             'uuid': uuid,
             'type': 'remove'
         }));
     };
+
 };
 
 PeerConnection.prototype.setPeerConnectionEvents = function() {
@@ -333,7 +336,11 @@ PeerConnection.prototype.initDataChannel = function() {
     this.dataChannel.onmessage = function(evt) {
         // Check strict data-uri string transfered
         if ( evt.data ) {
-            GameEvent.trigger('stageTransfer', evt.data);
+            if ( evt.data === 'LOSE' ) {
+                GameEvent.trigger('winGame');
+            } else {
+                GameEvent.trigger('stageTransfer', evt.data);
+            }
         }
     };
 };
@@ -344,22 +351,22 @@ PeerConnection.prototype.initDataChannel = function() {
 var PlayerList;
 (function() {
 
-var doc      = document,
-    fragment = doc.createDocumentFragment(),
-    node     = doc.getElementById('players'),
-    locked   = false;
-
-node.appendChild(fragment);
+var doc    = document,
+    node   = doc.getElementById('players'),
+    locked = false,
+    uuid;
 
 PlayerList = {
     update: update,
+    setUUID: setUUID,
     lock:   lock,
-    unlock: unlock
+    unlock: unlock,
+    hide: hide,
+    show: show
 };
 
 function update(players) {
-    var flg  = doc.createDocumentFragment(),
-        ul   = doc.crateElement('ul'),
+    var ul   = doc.createElement('ul'),
         size = players.length,
         i    = 0,
         player,
@@ -367,14 +374,20 @@ function update(players) {
 
     for ( ; i < size; ++i ) {
         player = players[i];
+        if ( player.uuid === uuid ) {
+            continue;
+        }
         li = doc.createElement('li');
         li.appendChild(doc.createTextNode(player.name));
-        li.setAttribute('data-uuid', plyer.uuid);
+        li.setAttribute('data-uuid', player.uuid);
         ul.appendChild(li);
     }
 
-    node.replaceChild(fragment, flg);
-    fragment = flg;
+    if ( node.firstChild ) {
+        node.replaceChild(ul, node.firstChild);
+    } else {
+        node.appendChild(ul);
+    }
 }
 
 function lock() {
@@ -383,6 +396,18 @@ function lock() {
 
 function unlock() {
     locked = false;
+}
+
+function setUUID(id) {
+    uuid = id;
+}
+
+function hide() {
+    node.style.display = 'none';
+}
+
+function show() {
+    node.style.display = 'block';
 }
 
 node.addEventListener('click', function(evt) {
@@ -1055,10 +1080,14 @@ Tetris.start = function(stage, width, height, isDuel) {
 
                     --times;
                 });
-            });
+            }),
+            msg = document.querySelector('.message');
 
             Stage.tick();
             Stage.addQueue(new CountDown());
+            msg.parentNode.removeChild(msg);
+            PlayerList.hide();
+            
         });
     } else {
         Stage.tick();
@@ -1188,7 +1217,7 @@ Tetris.prototype.setGameEvents = function() {
     GameEvent.on('gameover', function() {
         Stage.removeQueue(that);
         if ( that.peer ) {
-            that.peer.send('lose');
+            that.peer.send('LOSE');
             Layer.show('you lose', true);
         } else {
             Layer.show('Game over', true);
@@ -1209,7 +1238,7 @@ Tetris.prototype.setGameEvents = function() {
 global.Tetris = Tetris;
 global.stage  = Stage;
 
-Tetris.start(document.querySelector('.player'), 300, 600);
+Tetris.start(document.querySelector('.player'), 300, 600, true);
 
 
 document.body.style.height = window.innerHeight + 'px';

@@ -45,10 +45,14 @@ Tetris.start = function(stage, width, height, isDuel) {
 
                     --times;
                 });
-            });
+            }),
+            msg = document.querySelector('.message');
 
             Stage.tick();
             Stage.addQueue(new CountDown());
+            msg.parentNode.removeChild(msg);
+            PlayerList.hide();
+            
         });
     } else {
         Stage.tick();
@@ -178,7 +182,7 @@ Tetris.prototype.setGameEvents = function() {
     GameEvent.on('gameover', function() {
         Stage.removeQueue(that);
         if ( that.peer ) {
-            that.peer.send('lose');
+            that.peer.send('LOSE');
             Layer.show('you lose', true);
         } else {
             Layer.show('Game over', true);

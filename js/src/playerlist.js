@@ -1,22 +1,22 @@
 var PlayerList;
 (function() {
 
-var doc      = document,
-    fragment = doc.createDocumentFragment(),
-    node     = doc.getElementById('players'),
-    locked   = false;
-
-node.appendChild(fragment);
+var doc    = document,
+    node   = doc.getElementById('players'),
+    locked = false,
+    uuid;
 
 PlayerList = {
     update: update,
+    setUUID: setUUID,
     lock:   lock,
-    unlock: unlock
+    unlock: unlock,
+    hide: hide,
+    show: show
 };
 
 function update(players) {
-    var flg  = doc.createDocumentFragment(),
-        ul   = doc.crateElement('ul'),
+    var ul   = doc.createElement('ul'),
         size = players.length,
         i    = 0,
         player,
@@ -24,14 +24,20 @@ function update(players) {
 
     for ( ; i < size; ++i ) {
         player = players[i];
+        if ( player.uuid === uuid ) {
+            continue;
+        }
         li = doc.createElement('li');
         li.appendChild(doc.createTextNode(player.name));
-        li.setAttribute('data-uuid', plyer.uuid);
+        li.setAttribute('data-uuid', player.uuid);
         ul.appendChild(li);
     }
 
-    node.replaceChild(fragment, flg);
-    fragment = flg;
+    if ( node.firstChild ) {
+        node.replaceChild(ul, node.firstChild);
+    } else {
+        node.appendChild(ul);
+    }
 }
 
 function lock() {
@@ -40,6 +46,18 @@ function lock() {
 
 function unlock() {
     locked = false;
+}
+
+function setUUID(id) {
+    uuid = id;
+}
+
+function hide() {
+    node.style.display = 'none';
+}
+
+function show() {
+    node.style.display = 'block';
 }
 
 node.addEventListener('click', function(evt) {
