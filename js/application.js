@@ -237,7 +237,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         ws   = this.webSocket,
         uuid = this.uuid,
         that = this,
-        playerName = prompt('Input your player name');
+        playerName = prompt('Input your player name') || 'unknown';
 
     ws.onmessage = function(evt) {
         var message = JSON.parse(evt.data),
@@ -267,6 +267,12 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                 } else if ( sdp.type === 'answer' ) {
                     peer.setRemoteDescription(sdp, function() {
                         GameEvent.trigger('peerConnected');
+
+                        ws.send(JSON.stringify({
+                            "from": uuid,
+                            "to": that.remotePlayer,
+                            "type": "playing"
+                        }));
                     });
                 }
             }
@@ -278,7 +284,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
 
     ws.send(JSON.stringify({
         'uuid': uuid,
-        'name': playerName || 'unknown',
+        'name': playerName,
         'type': 'add'
     }));
 
@@ -288,6 +294,8 @@ PeerConnection.prototype.setWebSocketEvents = function() {
             'type': 'remove'
         }));
     };
+
+    PlayerList.setPlayer(playerName);
 
 };
 
@@ -354,7 +362,8 @@ var PlayerList;
 var doc    = document,
     node   = doc.getElementById('players'),
     locked = false,
-    uuid;
+    uuid,
+    playerName;
 
 PlayerList = {
     update: update,
@@ -362,7 +371,10 @@ PlayerList = {
     lock:   lock,
     unlock: unlock,
     hide: hide,
-    show: show
+    show: show,
+    setPlayer: setPlayer,
+    getPlayer: getPlayer,
+    drawPlayerName: drawPlayerName
 };
 
 function update(players) {
@@ -380,6 +392,10 @@ function update(players) {
         li = doc.createElement('li');
         li.appendChild(doc.createTextNode(player.name));
         li.setAttribute('data-uuid', player.uuid);
+        if ( player.playing > 0 ) {
+            li.setAttribute('data-playing', 1);
+            li.appendChild(doc.createTextNode('(playing)'));
+        }
         ul.appendChild(li);
     }
 
@@ -410,12 +426,27 @@ function show() {
     node.style.display = 'block';
 }
 
+function setPlayer(name) {
+    playerName = name;
+}
+
+function getPlayer(name) {
+    return playerName;
+}
+
+function drawPlayerName(ctx) {
+    console.log('Draw ' + playerName);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#999999';
+    ctx.fillText(playerName, 0, 50, 300);
+}
+
 node.addEventListener('click', function(evt) {
     var uuid = evt.target.getAttribute('data-uuid');
 
     evt.stopPropagation();
 
-    if ( evt.target.tagName === 'LI' && uuid ) {
+    if ( evt.target.tagName === 'LI' && uuid && ! evt.target.hasAttribute('data-playing') ) {
         GameEvent.trigger('playerSelected', {uuid: uuid, name: evt.target.firstChild.nodeValue});
         node.style.visibility = 'hidden';
     }
@@ -1087,7 +1118,6 @@ Tetris.start = function(stage, width, height, isDuel) {
             Stage.addQueue(new CountDown());
             msg.parentNode.removeChild(msg);
             PlayerList.hide();
-            
         });
     } else {
         Stage.tick();
@@ -1129,6 +1159,7 @@ Tetris.prototype.timerUpdate = function() {
 
     Stage.draw(ctx);
     block.draw(ctx);
+    //PlayerList.drawPlayerName(ctx);
 
     if ( this.peer ) {
         this.peer.send(this.canvas.toDataURL());

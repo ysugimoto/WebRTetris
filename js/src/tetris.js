@@ -52,7 +52,6 @@ Tetris.start = function(stage, width, height, isDuel) {
             Stage.addQueue(new CountDown());
             msg.parentNode.removeChild(msg);
             PlayerList.hide();
-            
         });
     } else {
         Stage.tick();
@@ -94,6 +93,7 @@ Tetris.prototype.timerUpdate = function() {
 
     Stage.draw(ctx);
     block.draw(ctx);
+    //PlayerList.drawPlayerName(ctx);
 
     if ( this.peer ) {
         this.peer.send(this.canvas.toDataURL());

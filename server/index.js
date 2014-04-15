@@ -14,12 +14,12 @@ server.on('connection', function(socket) {
             var json = JSON.parse(data),
                 index;
             
-            // user add
+            // user add or remove
             if ( json.uuid ) {
                 index = findPlayer(json.uuid);
                 if ( json.type === 'add' && index === -1 ) {
                     console.log('player added');
-                    players.push({'uuid': json.uuid, 'name': json.name});
+                    players.push({'uuid': json.uuid, 'name': json.name, 'playing': 0});
                     server.clients.forEach(function(client) {
                         client && client.send(JSON.stringify({'uuids': players}));
                     });
@@ -32,8 +32,20 @@ server.on('connection', function(socket) {
                     });
                 }
                 return;
+            } else if ( json.from && json.to && json.type === "playing" ) {
+                index = findPlayer(json.from);
+                if ( index !== -1 ) {
+                    players[index].playing = 1;
+                }
+                index = findPlayer(json.to);
+                if ( index !== -1 ) {
+                    players[index].playing = 1;
+                }
+                server.clients.forEach(function(client) {
+                    client && client.send(JSON.stringify({'uuids': players}));
+                });
+                return;
             }
-
 
             console.log(JSON.stringify(JSON.parse(data.replace(/\r/, "\n")), "", 2));
 

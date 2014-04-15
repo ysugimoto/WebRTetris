@@ -61,7 +61,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         ws   = this.webSocket,
         uuid = this.uuid,
         that = this,
-        playerName = prompt('Input your player name');
+        playerName = prompt('Input your player name') || 'unknown';
 
     ws.onmessage = function(evt) {
         var message = JSON.parse(evt.data),
@@ -91,6 +91,12 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                 } else if ( sdp.type === 'answer' ) {
                     peer.setRemoteDescription(sdp, function() {
                         GameEvent.trigger('peerConnected');
+
+                        ws.send(JSON.stringify({
+                            "from": uuid,
+                            "to": that.remotePlayer,
+                            "type": "playing"
+                        }));
                     });
                 }
             }
@@ -102,7 +108,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
 
     ws.send(JSON.stringify({
         'uuid': uuid,
-        'name': playerName || 'unknown',
+        'name': playerName,
         'type': 'add'
     }));
 
@@ -112,6 +118,8 @@ PeerConnection.prototype.setWebSocketEvents = function() {
             'type': 'remove'
         }));
     };
+
+    PlayerList.setPlayer(playerName);
 
 };
 

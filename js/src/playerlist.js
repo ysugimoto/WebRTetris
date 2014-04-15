@@ -4,7 +4,8 @@ var PlayerList;
 var doc    = document,
     node   = doc.getElementById('players'),
     locked = false,
-    uuid;
+    uuid,
+    playerName;
 
 PlayerList = {
     update: update,
@@ -12,7 +13,10 @@ PlayerList = {
     lock:   lock,
     unlock: unlock,
     hide: hide,
-    show: show
+    show: show,
+    setPlayer: setPlayer,
+    getPlayer: getPlayer,
+    drawPlayerName: drawPlayerName
 };
 
 function update(players) {
@@ -30,6 +34,10 @@ function update(players) {
         li = doc.createElement('li');
         li.appendChild(doc.createTextNode(player.name));
         li.setAttribute('data-uuid', player.uuid);
+        if ( player.playing > 0 ) {
+            li.setAttribute('data-playing', 1);
+            li.appendChild(doc.createTextNode('(playing)'));
+        }
         ul.appendChild(li);
     }
 
@@ -60,12 +68,27 @@ function show() {
     node.style.display = 'block';
 }
 
+function setPlayer(name) {
+    playerName = name;
+}
+
+function getPlayer(name) {
+    return playerName;
+}
+
+function drawPlayerName(ctx) {
+    console.log('Draw ' + playerName);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#999999';
+    ctx.fillText(playerName, 0, 50, 300);
+}
+
 node.addEventListener('click', function(evt) {
     var uuid = evt.target.getAttribute('data-uuid');
 
     evt.stopPropagation();
 
-    if ( evt.target.tagName === 'LI' && uuid ) {
+    if ( evt.target.tagName === 'LI' && uuid && ! evt.target.hasAttribute('data-playing') ) {
         GameEvent.trigger('playerSelected', {uuid: uuid, name: evt.target.firstChild.nodeValue});
         node.style.visibility = 'hidden';
     }
