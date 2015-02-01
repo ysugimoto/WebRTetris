@@ -19,7 +19,7 @@ server.on('connection', function(socket) {
                 index = findPlayer(json.uuid);
                 if ( json.type === 'add' && index === -1 ) {
                     console.log('player added');
-                    players.push({'uuid': json.uuid, 'name': json.name, 'playing': 0});
+                    players.push({'uuid': json.uuid, 'name': json.name, 'playing': 0, 'image': json.image});
                     server.clients.forEach(function(client) {
                         client && client.send(JSON.stringify({'uuids': players}));
                     });

@@ -11,6 +11,8 @@ Block.Square.prototype.drawNext = function(ctx) {
     var size  = Config.BLOCK_SIZE,
         point = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(point, point, size * 2, size * 2);
+    ctx.drawImage(this.color, point, point, size, size);
+    ctx.drawImage(this.color, point, point + size, size, size);
+    ctx.drawImage(this.color, point + size, point + size, size, size);
+    ctx.drawImage(this.color, point + size, point, size, size);
 };

@@ -45,13 +45,12 @@ Tetris.start = function(stage, width, height, isDuel) {
 
                     --times;
                 });
-            }),
-            msg = document.querySelector('.message');
+            });
 
             Stage.tick();
             Stage.addQueue(new CountDown());
-            msg.parentNode.removeChild(msg);
-            PlayerList.hide();
+            UserName.hide();
+            Modal.hideAll();
         });
     } else {
         Stage.tick();
@@ -118,7 +117,7 @@ Tetris.prototype.timerUpdate = function() {
                 Stage.removeQueue(instance);
                 that.lock = false;
                 GameEvent.trigger('putBlock');
-                Enemy.setView(canvas.toDataURL());
+                //Enemy.setView({data: canvas.toDataURL()});
             });
         });
         Stage.addQueue(new queue());

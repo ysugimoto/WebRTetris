@@ -170,8 +170,9 @@ function draw(ctx) {
     for ( i = 0; i < y; ++i ) {
         for ( j = 0; j < x; ++j ) {
             if ( matrix[i][j] > 0 ) {
-                ctx.fillStyle = color[matrix[i][j]];
-                ctx.fillRect(j * size, i * size, size, size);
+                //ctx.fillStyle = color[matrix[i][j]];
+                //ctx.fillRect(j * size, i * size, size, size);
+                ctx.drawImage(color[matrix[i][j]], j*size, i*size, size, size);
             }
         }
     }

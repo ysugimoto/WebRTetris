@@ -3,10 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <title>Tetris</title>
+        <link href="//fonts.googleapis.com/css?family=Lato:100,400" rel="stylesheet" type="text/css">
+        <link href="//yui.yahooapis.com/pure/0.5.0/pure-min.css" rel="stylesheet" type="text/css">
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <link rel="stylesheet" type="text/css" href="css/application.css" />
     </head>
     <body>
-        <div class="message">対戦相手を選択してください</div>
         <div id="game">
             <div class="stage player"></div>
             <div class="info">
@@ -26,10 +28,40 @@
             </div>
             <div class="stage enemy"></div>
         </div>
-        <div id="players"></div>
         <div id="layer">
             <p>Game over</p>
         </div>
+        <div id="gameTitle">
+            <h3 class="modal-title">Select Player(s)</h3>
+            <button class="single pure-button pure-button-primary player-single">
+                <i class="fa fa-user"></i>1 Player
+            </button>
+            <button class="single pure-button pure-button-primary player-double">
+                <i class="fa fa-users"></i>2 Players
+            </button>
+        </div>
+        <div id="users">
+            <h3 class="modal-title">Select Rival</h3>
+            <div class="user-self">
+                <a class="pure-button signin" href="http://127.0.0.1/tetris/index.php"><i class="fa fa-twitter"></i>Signin with twitter</a>
+            </div>
+            <div class="user-others" id="players">
+            </div>
+        </div>
+        <script type="text/x-retirever-template" id="tetris-modal">
+            <div class="modal-content">
+                <p class="modal-msg">
+                    {{if image}}
+                    <img src="{{image}}" width="40" height="40">
+                    {{/if}}
+                    {{%msg}}
+                </p>
+                <div class="modal-buttons">
+                    <button class="pure-button pure-button-primary ok">OK</button>
+                    <button class="pure-button ng">NG</button>
+                </div>
+            </div>
+        </script>
         <script src="js/application.js"></script>
     </body>
 </html>

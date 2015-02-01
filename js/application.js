@@ -1,5 +1,6 @@
 (function(global) {
 
+!function(a){function b(a){this.template=a,this.leftDelimiter="{{",this.rightDelimiter="}}",this.syntax=["obj"],this.counter=0,this.compiledTemplate=null,this.division=!0}b.leftDelimiter="{{",b.rightDelimiter="}}",b.setDelimiter=function(a,c){b.leftDelimiter=a||"{{",b.rightDelimiter=c||"}}"},b.Helpers={},b.make=function(a){return new b(a)},b.addHelper=function(a,c){b.Helpers[a]=c},b.addHelperObject=function(a){var c;for(c in a)a.hasOwnProperty(c)&&(b.Helpers[c]=a[c])},b.prototype._escape=function(a){return null===a||void 0===a?"":(a+"").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;")},b.prototype.parse=function(a){return"function"!=typeof this.compiledTemplate&&this.compile(),this.compiledTemplate(a||{},b.Helpers,this._escape,"")},b.prototype.compile=function(){for(var a,c,d,e=new RegExp(b.leftDelimiter+"([/#@%])?(.+?)"+b.rightDelimiter,"g"),f=[],g=0,h=0;null!==(c=e.exec(this.template));)switch(a=this.template.slice(g,c.index),a&&!/^[\r\n\s]+$/.test(a)&&(f[f.length]=h>0?this.getPrefix()+this.quote(a.replace(/^[\n|\r]+|[\n|\r]+$/g,"")):this.getPrefix()+this.quote(a)),g=e.lastIndex,c[1]){case"#":f[f.length]=this.getPrefix()+this._compileHelper(c[2]);break;case"@":d=this._compileReservedVars(c[2]),d&&(f[f.length]=this.getPrefix()+d);break;case"%":f[f.length]=this.getPrefix()+this.syntax.join(".")+"."+c[2];break;case"/":"loop"===c[2]&&(this.syntax.pop(),this.counter--),f[f.length]="}",this.division=!0,h--;break;default:d=this._compileBuiltInControl(c[2]),d&&(f[f.length]=d),/^(loop|if)/.test(c[2])&&h++}return g<this.template.length&&(f[f.length]=this.getPrefix()+this.quote(this.template.slice(g))),f[f.length]=";return b;",this.compiledTemplate=new Function("obj","Helper","_e","b",f.join("")),this},b.prototype._compileHelper=function(a){var c,d=a.split(/\s+/),e=d.shift(),f=d.length,g=0;if("function"!=typeof b.Helpers[e])throw new Error('Parse Error: Helper "'+e+'" is undefined or not a function.');for(g=0;f>g;++g)c=this.getPrimitiveType(d[g]),null===c?d[g]=this.syntax.join(".")+"."+d[g]:"string"==typeof c?d[g]=this.quote(c):"number"==typeof c&&(d[g]=c);return"Helper."+e+"("+d.join(",")+")"},b.prototype._compileReservedVars=function(a){var b,c,d=!0;if("%"===a[0]&&(a=a.slice(1),d=!1),c=/^(data|index|parent)(.+)?/.exec(a),null!==c){switch(c[1]){case"data":b=this.syntax.join(".")+(c[2]||"");break;case"parent":b=this.syntax.slice(0,-1).join(".")+(c[2]||"");break;case"index":d=!1,b="i"+(this.counter-1);break;default:return}return d?"_e("+b+")":b}},b.prototype._compileBuiltInControl=function(a){var b,c,d=/^(if|else\sif|else|for|loop)(?:\s(.+))?/.exec(a);if(null===d)return this.getPrefix()+"_e("+this.syntax.join(".")+"."+a+")";switch(this.division=!0,d[1]){case"if":return";if("+this._parseCondition(d[2])+"){";case"else if":return"}else if("+this._parseCondition(d[2])+"){";case"else":return"}else{";case"loop":case"for":return c=this.counter,b=";for(var i"+c+"=0,size"+c+"=("+this.syntax.join(".")+"."+d[2]+"||[]).length; i"+c+"<size"+c+"; ++i"+c+"){",this.syntax[this.syntax.length]=d[2]+"[i"+this.counter++ +"]",b}},b.prototype.quote=function(a){return a=a.replace(/\\/g,"\\\\\\").replace(/\n/g,"\\n").replace(/\r/g,"\\r").replace(/[']/g,"\\'"),"'"+a+"'"},b.prototype._parseCondition=function(a){for(var b,c,d=a.replace(/(!|>=?|<=?|={2,3}|[^\+]\+|[^\-]\-|\*|&{2}|\|{2})/g," $1 "),e=d.split(/\s+/),f=e.length,g=0,h=[];f>g;++g)b=e[g],/^(!|>=?|<=?|={1,3}|\+|\-|\*|&{2}|\|{2})$/.test(b)?h[h.length]=b:(c=this.getPrimitiveType(b),null===c?h[h.length]=this.syntax.join(".")+"."+b:"number"==typeof c?h[h.length]=c:"string"==typeof c&&(h[h.length]=this.quote(c)));return h.join(" ")},b.prototype.getPrimitiveType=function(a){var b;return null!==(b=/^['"](.+?)['"]$/.exec(a))?b[1]:null!==(b=/^([0-9\.]+)$/.exec(a))?-1!==b[1].indexOf(".")?parseFloat(b[1]):parseInt(b[1],10):null},b.prototype.getPrefix=function(){var a="+";return this.division===!0&&(a="b+=",this.division=!1),a},a.Retriever=b}(this);
 var Config;
 (function() {
 
@@ -10,39 +11,38 @@ config.STAGE_Y      = 20;
 config.BLOCK_SIZE   = 30;
 config.BLOCK_COLORS = [];
 
-config.BLOCK_COLORS[1] = '#2836cc';
-config.BLOCK_COLORS[2] = '#c428cc';
-config.BLOCK_COLORS[3] = '#45cc28';
-config.BLOCK_COLORS[4] = '#cca828';
-config.BLOCK_COLORS[5] = '#3a0000';
-config.BLOCK_COLORS[6] = '#432020';
-config.BLOCK_COLORS[7] = '#cc9c28';
-
-// Future implement block image
-//var colors = [
-//    '',
-//    // red
-//    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACT0lEQVR4Ae3WS24TXRAF4HObToIJYNgHG0HsCokNsAu2kOkf6d8JAyBJv++rHlS1ZRQxwI7JjByVStcDf7qullzdXl1dbzYXRGwhD4tHLXhIZI0hpdSUUinUmvvu6//KJMsoU29dc9SSlSqO1lXFv5IjLVOcxnHo/3v/sSUiU8L5RfPilVu7G4vAi4/Q3UUtWjPFJc2TuX0/LMvS1soyD03YhrPz5vK1i8aJhbX6+bDLpLWwu+PYd/0wdqnYTPzWNgeoNi+3dnfrqhKYAhWfySHYSok4x53bmRvzSFpKbpnZ56sCaHO5VfEfwf0Pn3taIPxnWkW05jxPU9/f9UO35JF1YdRaWhE1IojATyLL2H35jIen4/ObWEfSJLBiZqNFa4GrbJ3vvuOkDKn0FVFQFbTOqYVFWNdPsk7jNHpiL2PEvD29RkS1KpPkeBqdBdlF/Er72+OGyGk0A+Luffrx80Q/0f8ArYr96VFpc9Ui3olOg1i9moBwn3aUGcJK9S//nloT93qrqmBSIq2Zc8rLHE6ibwkz43kDDabvaa1FSuYU8+zruKOzIdeJkQ9tXQVIURS3Fd+qH0ixaXDR7LeMpEg5pvX94XYYbyL1BKOLQHAgZmXx+xZxWnYFo8k3eo2zuQav+7hMrEnACsXhNMBZ8DmQgtftNYvTvnZLqXEcfBDj1CXfm5FRjqZDWPUGG7jou3wdo5TSxph2br+6y/qgGUe5TgPPAiwaoA10pxtda1srXX/4tCzT+g5YiCoziSiOjqpaYxZmMoFLZqI327c/ARn2odbMxN2AAAAAAElFTkSuQmCC',
-//    // yellow
-//    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABV0RVh0Q3JlYXRpb24gVGltZQAxNC4zLjMxRoRUyQAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAJ/SURBVEiJ7ZdLbtswEIY/O8rDCVqn98npCvQCvUJyiqwL9CZZxK2sl/UgZ8guhrIVIwvb8aZABhgIsqH5+JME5+fs+flXXCyuEVFUFRFBRAkhEEIkxshHwuoEVBXnPH3f45yQLRbXPDz8BgSogTI9O2AAPHAqPKQaHaoNfV/TNCWPj9/JRCQVvwa+JEiYPAOgJ8AD4IAB1ZZhaGiakqKoaNuWzHsFKmAJXAFf98A6eT8GKoAjhJZhqGmagqKoWa8dfd+PistUeJmUL998bDNyaMSUQgjdFrpe1+T5QFlGnBvIVBVb01HVMqmsgD9pUG367VCwra1Iw2ZTkufVFto04L0jCyGmwmGSNfDzCJXvx9UVFMUVq5WnLCNtC10HqkoWwrgJpuu5+jB0jKJw5Dm0LTgH3kOMkcz+HndtZDfN54mqsvQeQrCcgMGUemxDdWcD973l/jmUvX0dVYezgVVN5X7Mz0Y4Mj7Bn+BP8P8Pnpxc0zPtYz7rkJjvQGODkJTnCRHL/WMzKR5bogKeGDtms/OAxyZxeQlZBvMkdW72dTR8HSE0OLc5DxVYraCuzQA4Z00DIDOwI8aBEDqcq6nrkqK4pCg8VWUjfq/DvBcx2tQOA7y+wsvLzgDc3cHNzcSBxNihOhqzkr9/a1YrIc+tiQ/DbqSHhIgNtq7t2/H70QioirlMkU2CVskNOqoq0nVW5NjLxHxua7pYmFJVU13XBvbekdm1okpmuyHPzZhtNruRHguezeDiwsze7a3V2GwMHiM458i6rt9C12u/taB9f5rafXCMuxzh3nsy74Wnpx+0bZMuVA4Rj6pg1ve0sE0bUQ2oCs45nBsQEe7vv/EP4tgpLDuVls0AAAAASUVORK5CYII=',
-//    // lightgreen
-//    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACPUlEQVR4Ae2VTY4jRRBG3wzp9jRofrgP10JijcQF5gpwilkjseUULPDgdlWWqzLjJ4MsVcuLWdBuq1donj+lauF6Dn2WMtKnT7+/ud+79Y/bireV6PAcojXvcVfRpRQVS9375w9/GJbJA0M/F5ZKVTS41t5oldpfnHzKJQ/T8OOvPyczU3TP/i1vg2i07exxPIhrvIJ09ezzVKfuHU/jPM/J1EfG97y/4+4d7y5qx7fnJ72GCTK3Odd8mk75lOVBainr1ANDEN3eZ+/n5duKPtEv0WPY0pZH70OuxxpDiNRk7pncaJvd8ZHxM58HhpnZ8f9Wby1PNg3nYTyOm5cJUUmtRVc02pZM/shHnktv83SnB129Myy4e4rWBLmUe+DATchJOLJ6BZSISIDjW2tbG9zGuAaFtoZNDTSaooYtLNxGWUNwIX3xdzcat+F88Wri5fmq/qr+/6uDuDy8pDqIy+oyjNsw1rxes5ECthu1R9ElFl5x+/W0g/RoTxFhWE+lllbOembPLRwgwz3sYUdsakFq1HW/SR7ysDvt9KSMUKA9sRwxqPA3/AUCCt/BG5p7aq31EhZf92bf8/mfbAfjCCNU8CsqLpChssahrTG3daOf7dy94zT2fSxHiTFYwCB4mtewg3tQcBDI0FCVJKJjGfu802nS47o3OW+/f536FXwDd/AtOJxBIBCRVJby6H1YvUxQLiM/Rx1bHu2qmlTtp99+Oc9TKUVF1NTdokVwNRFBNG/mptKpZvbhw/f/Aq8KNix5i2NJAAAAAElFTkSuQmCC',
-//    // blue
-//    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACXklEQVR4Ae3VS24TQRAG4JqHHTtZRMBRkBDHRrDLGombsCDCnhlPv+pJ9dhRwiY4VlYopVKv0p9/VWdUzd3d9+12wywi7Ke3LmUGLypdyhVEyjn72W+3V0P3URpIClEgERQCYhCF83UzIAEkiFlCyNNh/vTuS1+TNrDqYHsFTqmBPbTWO2e5LDVNLhJjcXcch3gVeyJOAs0G+g6uXbfTD6iCCdgZrmiNnFHnWMZpnsYhhX3OqaYOWonrTc3up1W3BmGF522rXemCGjxvdfdh3lEZEbEXkUSnCdxsKhozTAFC8Qugz9N2mnKMPE5hGHbR3TwyzkTYq6oTZqcppwLffsDLa12mIUz3nlcoCicRcdpYFlrrOQa4rFIYMO3cVUUTMrMeYMnrLrteU19WXCbGSYXcstrWPz60LA9CF9IqWTm7CA/VP31uWMZ9WZmKmcKTauH1641+o/9j+vFDP5a9Lu2u1bO26MUfOntD0zZN+xetD5sF0QCaC2jh7N22K2j7o96amSxoIUhFY0a4qDDeMx6Ekwo6CWC9mdawbFj3G47jIQ9DjgOVSSWb6XOe1dsqpYRfef5pjq6oW9+AbUS0bplCVoqE457f/w6He0o7wkm5mMk/R6ycPa9KOf59TbNWEe6ZOWV29+DuuE9hx2USTqZ8zv+Lj7VpV22/7YRMZZnGAUzr2kWkOWTf84dpcBfzyBQ8gqmctxcc79pu3a2uzUTqXWQwxNKnlE5u3Nd9jLNyPjPyUW6g0gBW27yrTkQ9EX/+8DVu55wzIjKjiKjauTRUzQ+pxYjkeZnp9vb9H2CzqquGELfvAAAAAElFTkSuQmCC',
-//    // lightblue
-//    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACWklEQVR4Ae3WT24zRRAF8Nfjtv2ZjygSd+AEHAZxPU6AWGbNAeAE7JAgwvN/pv9U1aN7TERgY8fKjjyVauX+qVVppcY/Pf10On0SUVUpvZRtIfGm2JaipJRDCKX70+n469ffKDErRq09GBIhxO04icR6cM46raEfp29//sHXmxIHh8+7ahlqp9WuBG92k2HNOodY3KHvlmXxOcukeNhh7/Dl7kLXrlo7b3CFyMQqNm3u2Hehb0NY661HBVH1g6udhBLZINdgbqVA2Nyu3Ldr1+6sU59S8qo6K8haDx5GTIo2Y9yGrrxOJ8McpZ/moT1fXFunnJM3s2D/THlWfP873p4Dui6cn6sbFsZVVQvNTJhCSyfOgvsShk6GM4ubEyWT9Hh5CTToNo37YvNQqqAwA22jtxhAVjranTRTYAyv35T/z9/EcG9UwX+d9njX/E/oD/qDJv4O+a40L8Xa9V6IKqXgGtc0r2hWUQkhghJwd/97cn7Pnb/onqRsdLLi2hIzcLyD1vbZltEdT+5whN8DLLRlFpd1v8XUD6N1XRo6m4d6EdqVpavCFKX9Q55/Q05OcmOfcfikat4KqsXV6bLnz3/GsoeGc6VzpF4bfqVDuW/9cYrOFLTGTFW8iCxZijuUPd+1od/QuFLlpudSxur3ZQ6N5OIxJ5tHmGWXfEp53L53pr6L/baPw8wcYXoTDeeaHfzBHb9wqihnJdnK5KNf1/XFbau7TIyBIre5VUazc/tDc9mvJDgzp8zsc5bvfvlxWabtGzCJJFU1I0DcFrI2rZHkctpFYX58/OovsY2FynrDbyoAAAAASUVORK5CYII=',
-//    // orange
-//    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACR0lEQVR4Ae3VXW77RBQF8JNkkvxToIH9sDokNsAWYBV9RkJshAcCie3xx8z9xLeJSvtC0qhv9OjIyoP105FjedLT06+73VZE50hELeJz8J5YxGaEiEspRJJm9/vNb0iCmqEtLEMmSIUxbtfdoBU8ae3LkPvc/vz1D0lEsGKkLbbfAA638zUKvUkPlyBVaaxjP7tN243LMTEr0GGxx2qD7SMCDRqmUAP8umsCJQs3913TtPnUU9mVWA1rg9juEdv3L3fD+JrsURPj6eye2nzsa1ucqCZVBefL2C/7GFs7jH+htuARpldoN0iVqR+69th0xxxuT2CmZOZBuF1KGb//hHdmAzTt5tDx7I6MiaGqM21QQrga1+GAu9IMdBwxu6Rgg7snAIGaQ/zyNO5KV6NsMI8G/eoFYphAJtyVIlHHv0lv/5O5hruisRd4S39g/jf0J/1Ju7/8+FA6OL98sk1wV8Siy0X0FR2owuay87S4//OE9QppedGTx1KJajUuXIYt7slhRCbsErYJ6+ULreQyuxONObdt06ybkbsaK8zxH3GHGKrizwF/ZJCC1/jK8SXhcso4T0rP52Zu/z7lQ5bjiJmuCrXrj7hI7K1yud88qipJ5tTh2e2ez2Pqik8CsZteluUinu8uxV71GJ4p6Dh2ibgMXd+1Tdcfhzg3B44J6nBcz2KB1QKbFR6CxhB6bCKiNE3l7J7CjXO+3Dw5aGC1xAbwc2edQ2fmxCy/PP44pr48FCISYVUxc9wc9zBVTVUoUkXk2/13/wAuwGWy97igZQAAAABJRU5ErkJggg==',
-//    // purple
-//    'data:image/png;base64,VBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACUUlEQVR4Ae3WT27rNhAG8JFM2Q7QNn1v+85ZoOfocbLuAXqDLNpdi9gSbYmcv/1kLlpvasfIrpl8ILiY/DigAjDp5eXXp/1ezUxRhvilIuhd5eFuDoZFylKwpqf97ttvX0NDs8ooWH1xr+7idLcegKvbYnKSOc95rL//NCdVC4l+16fv02o5aShaO+/CguI+lx20zLKcljzmcRrneU6iKpMMz0O/7dMPCX3tALhtf9MNjeBY3bzk40XmqVRep9ZRQUDH7FjR7eo99yFxw441oGWRkgtc/Ix1nGNmjmSgs7YB03MKC52U/2KcZ7OF3aDbLZdTwbSH6TDV6RznQkW4T+6+EqCdsOKY119e6f113B6PcoRbqTKx2TZ5hLMDbZfLfzI9VJlzpgxXSZGIIRFR+0sALyYyyWP0TDNiZA6JAkn/fGiJTjtf/DGaiRH6V6Wrb4LyeIxuw17TH1r/F/qT/qSDrjYfRsea8FhXfdA2MqSnvqOOGt3QsEskdNHHaCFBNrRBmp4CpWu8uhat5/oYPdK40LKl7UAD9D4CtDu7VcO8JZdpnI7DMUtGHxMHxX+/X0YmJHDf6A2bPe0R6MkdCVtMlst7jPctHw56yLTSaHXym1fMxK259QcF1k41qSqfeXWny3vMl/eY2Oiu/0JwrYnSjnbtfVFSHIPNRjgxyzzNmHc8jZNMcCvVdv6ddE9909uvQMe65ZqWgnsocLNkvMc482rku+mgaClUoItIEtE/fl7m87kUZiGVjdnWY1jb7q4+Irl1qr18N3BVlecfv/wN4W2ZJreJKGMAAAAASUVORK5CYII='
-//];
-//
-//colors.forEach(function(base64, index) {
-//    if ( index > 0 ) {
-//        config.BLOCK_COLORS[index] = new Image();
-//        config.BLOCK_COLORS[index].src = base64;
-//    }
-//});
+if ( typeof Image === "undefined" ) {
+    config.BLOCK_COLORS[1] = '#2836cc';
+    config.BLOCK_COLORS[2] = '#c428cc';
+    config.BLOCK_COLORS[3] = '#45cc28';
+    config.BLOCK_COLORS[4] = '#cca828';
+    config.BLOCK_COLORS[5] = '#3a0000';
+    config.BLOCK_COLORS[6] = '#432020';
+    config.BLOCK_COLORS[7] = '#cc9c28';
+} else {
+    [
+        '',
+        // red
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACT0lEQVR4Ae3WS24TXRAF4HObToIJYNgHG0HsCokNsAu2kOkf6d8JAyBJv++rHlS1ZRQxwI7JjByVStcDf7qullzdXl1dbzYXRGwhD4tHLXhIZI0hpdSUUinUmvvu6//KJMsoU29dc9SSlSqO1lXFv5IjLVOcxnHo/3v/sSUiU8L5RfPilVu7G4vAi4/Q3UUtWjPFJc2TuX0/LMvS1soyD03YhrPz5vK1i8aJhbX6+bDLpLWwu+PYd/0wdqnYTPzWNgeoNi+3dnfrqhKYAhWfySHYSok4x53bmRvzSFpKbpnZ56sCaHO5VfEfwf0Pn3taIPxnWkW05jxPU9/f9UO35JF1YdRaWhE1IojATyLL2H35jIen4/ObWEfSJLBiZqNFa4GrbJ3vvuOkDKn0FVFQFbTOqYVFWNdPsk7jNHpiL2PEvD29RkS1KpPkeBqdBdlF/Er72+OGyGk0A+Luffrx80Q/0f8ArYr96VFpc9Ui3olOg1i9moBwn3aUGcJK9S//nloT93qrqmBSIq2Zc8rLHE6ibwkz43kDDabvaa1FSuYU8+zruKOzIdeJkQ9tXQVIURS3Fd+qH0ixaXDR7LeMpEg5pvX94XYYbyL1BKOLQHAgZmXx+xZxWnYFo8k3eo2zuQav+7hMrEnACsXhNMBZ8DmQgtftNYvTvnZLqXEcfBDj1CXfm5FRjqZDWPUGG7jou3wdo5TSxph2br+6y/qgGUe5TgPPAiwaoA10pxtda1srXX/4tCzT+g5YiCoziSiOjqpaYxZmMoFLZqI327c/ARn2odbMxN2AAAAAAElFTkSuQmCC',
+        // yellow
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABV0RVh0Q3JlYXRpb24gVGltZQAxNC4zLjMxRoRUyQAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAJ/SURBVEiJ7ZdLbtswEIY/O8rDCVqn98npCvQCvUJyiqwL9CZZxK2sl/UgZ8guhrIVIwvb8aZABhgIsqH5+JME5+fs+flXXCyuEVFUFRFBRAkhEEIkxshHwuoEVBXnPH3f45yQLRbXPDz8BgSogTI9O2AAPHAqPKQaHaoNfV/TNCWPj9/JRCQVvwa+JEiYPAOgJ8AD4IAB1ZZhaGiakqKoaNuWzHsFKmAJXAFf98A6eT8GKoAjhJZhqGmagqKoWa8dfd+PistUeJmUL998bDNyaMSUQgjdFrpe1+T5QFlGnBvIVBVb01HVMqmsgD9pUG367VCwra1Iw2ZTkufVFto04L0jCyGmwmGSNfDzCJXvx9UVFMUVq5WnLCNtC10HqkoWwrgJpuu5+jB0jKJw5Dm0LTgH3kOMkcz+HndtZDfN54mqsvQeQrCcgMGUemxDdWcD973l/jmUvX0dVYezgVVN5X7Mz0Y4Mj7Bn+BP8P8Pnpxc0zPtYz7rkJjvQGODkJTnCRHL/WMzKR5bogKeGDtms/OAxyZxeQlZBvMkdW72dTR8HSE0OLc5DxVYraCuzQA4Z00DIDOwI8aBEDqcq6nrkqK4pCg8VWUjfq/DvBcx2tQOA7y+wsvLzgDc3cHNzcSBxNihOhqzkr9/a1YrIc+tiQ/DbqSHhIgNtq7t2/H70QioirlMkU2CVskNOqoq0nVW5NjLxHxua7pYmFJVU13XBvbekdm1okpmuyHPzZhtNruRHguezeDiwsze7a3V2GwMHiM458i6rt9C12u/taB9f5rafXCMuxzh3nsy74Wnpx+0bZMuVA4Rj6pg1ve0sE0bUQ2oCs45nBsQEe7vv/EP4tgpLDuVls0AAAAASUVORK5CYII=',
+        // lightgreen
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACPUlEQVR4Ae2VTY4jRRBG3wzp9jRofrgP10JijcQF5gpwilkjseUULPDgdlWWqzLjJ4MsVcuLWdBuq1donj+lauF6Dn2WMtKnT7+/ud+79Y/bireV6PAcojXvcVfRpRQVS9375w9/GJbJA0M/F5ZKVTS41t5oldpfnHzKJQ/T8OOvPyczU3TP/i1vg2i07exxPIhrvIJ09ezzVKfuHU/jPM/J1EfG97y/4+4d7y5qx7fnJ72GCTK3Odd8mk75lOVBainr1ANDEN3eZ+/n5duKPtEv0WPY0pZH70OuxxpDiNRk7pncaJvd8ZHxM58HhpnZ8f9Wby1PNg3nYTyOm5cJUUmtRVc02pZM/shHnktv83SnB129Myy4e4rWBLmUe+DATchJOLJ6BZSISIDjW2tbG9zGuAaFtoZNDTSaooYtLNxGWUNwIX3xdzcat+F88Wri5fmq/qr+/6uDuDy8pDqIy+oyjNsw1rxes5ECthu1R9ElFl5x+/W0g/RoTxFhWE+lllbOembPLRwgwz3sYUdsakFq1HW/SR7ysDvt9KSMUKA9sRwxqPA3/AUCCt/BG5p7aq31EhZf92bf8/mfbAfjCCNU8CsqLpChssahrTG3daOf7dy94zT2fSxHiTFYwCB4mtewg3tQcBDI0FCVJKJjGfu802nS47o3OW+/f536FXwDd/AtOJxBIBCRVJby6H1YvUxQLiM/Rx1bHu2qmlTtp99+Oc9TKUVF1NTdokVwNRFBNG/mptKpZvbhw/f/Aq8KNix5i2NJAAAAAElFTkSuQmCC',
+        // blue
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACXklEQVR4Ae3VS24TQRAG4JqHHTtZRMBRkBDHRrDLGombsCDCnhlPv+pJ9dhRwiY4VlYopVKv0p9/VWdUzd3d9+12wywi7Ke3LmUGLypdyhVEyjn72W+3V0P3URpIClEgERQCYhCF83UzIAEkiFlCyNNh/vTuS1+TNrDqYHsFTqmBPbTWO2e5LDVNLhJjcXcch3gVeyJOAs0G+g6uXbfTD6iCCdgZrmiNnFHnWMZpnsYhhX3OqaYOWonrTc3up1W3BmGF522rXemCGjxvdfdh3lEZEbEXkUSnCdxsKhozTAFC8Qugz9N2mnKMPE5hGHbR3TwyzkTYq6oTZqcppwLffsDLa12mIUz3nlcoCicRcdpYFlrrOQa4rFIYMO3cVUUTMrMeYMnrLrteU19WXCbGSYXcstrWPz60LA9CF9IqWTm7CA/VP31uWMZ9WZmKmcKTauH1641+o/9j+vFDP5a9Lu2u1bO26MUfOntD0zZN+xetD5sF0QCaC2jh7N22K2j7o96amSxoIUhFY0a4qDDeMx6Ekwo6CWC9mdawbFj3G47jIQ9DjgOVSSWb6XOe1dsqpYRfef5pjq6oW9+AbUS0bplCVoqE457f/w6He0o7wkm5mMk/R6ycPa9KOf59TbNWEe6ZOWV29+DuuE9hx2USTqZ8zv+Lj7VpV22/7YRMZZnGAUzr2kWkOWTf84dpcBfzyBQ8gqmctxcc79pu3a2uzUTqXWQwxNKnlE5u3Nd9jLNyPjPyUW6g0gBW27yrTkQ9EX/+8DVu55wzIjKjiKjauTRUzQ+pxYjkeZnp9vb9H2CzqquGELfvAAAAAElFTkSuQmCC',
+        // lightblue
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACWklEQVR4Ae3WT24zRRAF8Nfjtv2ZjygSd+AEHAZxPU6AWGbNAeAE7JAgwvN/pv9U1aN7TERgY8fKjjyVauX+qVVppcY/Pf10On0SUVUpvZRtIfGm2JaipJRDCKX70+n469ffKDErRq09GBIhxO04icR6cM46raEfp29//sHXmxIHh8+7ahlqp9WuBG92k2HNOodY3KHvlmXxOcukeNhh7/Dl7kLXrlo7b3CFyMQqNm3u2Hehb0NY661HBVH1g6udhBLZINdgbqVA2Nyu3Ldr1+6sU59S8qo6K8haDx5GTIo2Y9yGrrxOJ8McpZ/moT1fXFunnJM3s2D/THlWfP873p4Dui6cn6sbFsZVVQvNTJhCSyfOgvsShk6GM4ubEyWT9Hh5CTToNo37YvNQqqAwA22jtxhAVjranTRTYAyv35T/z9/EcG9UwX+d9njX/E/oD/qDJv4O+a40L8Xa9V6IKqXgGtc0r2hWUQkhghJwd/97cn7Pnb/onqRsdLLi2hIzcLyD1vbZltEdT+5whN8DLLRlFpd1v8XUD6N1XRo6m4d6EdqVpavCFKX9Q55/Q05OcmOfcfikat4KqsXV6bLnz3/GsoeGc6VzpF4bfqVDuW/9cYrOFLTGTFW8iCxZijuUPd+1od/QuFLlpudSxur3ZQ6N5OIxJ5tHmGWXfEp53L53pr6L/baPw8wcYXoTDeeaHfzBHb9wqihnJdnK5KNf1/XFbau7TIyBIre5VUazc/tDc9mvJDgzp8zsc5bvfvlxWabtGzCJJFU1I0DcFrI2rZHkctpFYX58/OovsY2FynrDbyoAAAAASUVORK5CYII=',
+        // orange
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACR0lEQVR4Ae3VXW77RBQF8JNkkvxToIH9sDokNsAWYBV9RkJshAcCie3xx8z9xLeJSvtC0qhv9OjIyoP105FjedLT06+73VZE50hELeJz8J5YxGaEiEspRJJm9/vNb0iCmqEtLEMmSIUxbtfdoBU8ae3LkPvc/vz1D0lEsGKkLbbfAA638zUKvUkPlyBVaaxjP7tN243LMTEr0GGxx2qD7SMCDRqmUAP8umsCJQs3913TtPnUU9mVWA1rg9juEdv3L3fD+JrsURPj6eye2nzsa1ucqCZVBefL2C/7GFs7jH+htuARpldoN0iVqR+69th0xxxuT2CmZOZBuF1KGb//hHdmAzTt5tDx7I6MiaGqM21QQrga1+GAu9IMdBwxu6Rgg7snAIGaQ/zyNO5KV6NsMI8G/eoFYphAJtyVIlHHv0lv/5O5hruisRd4S39g/jf0J/1Ju7/8+FA6OL98sk1wV8Siy0X0FR2owuay87S4//OE9QppedGTx1KJajUuXIYt7slhRCbsErYJ6+ULreQyuxONObdt06ybkbsaK8zxH3GHGKrizwF/ZJCC1/jK8SXhcso4T0rP52Zu/z7lQ5bjiJmuCrXrj7hI7K1yud88qipJ5tTh2e2ez2Pqik8CsZteluUinu8uxV71GJ4p6Dh2ibgMXd+1Tdcfhzg3B44J6nBcz2KB1QKbFR6CxhB6bCKiNE3l7J7CjXO+3Dw5aGC1xAbwc2edQ2fmxCy/PP44pr48FCISYVUxc9wc9zBVTVUoUkXk2/13/wAuwGWy97igZQAAAABJRU5ErkJggg==',
+        // purple
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAIAAAC0Ujn1AAACUUlEQVR4Ae3WT27rNhAG8JFM2Q7QNn1v+85ZoOfocbLuAXqDLNpdi9gSbYmcv/1kLlpvasfIrpl8ILiY/DigAjDp5eXXp/1ezUxRhvilIuhd5eFuDoZFylKwpqf97ttvX0NDs8ooWH1xr+7idLcegKvbYnKSOc95rL//NCdVC4l+16fv02o5aShaO+/CguI+lx20zLKcljzmcRrneU6iKpMMz0O/7dMPCX3tALhtf9MNjeBY3bzk40XmqVRep9ZRQUDH7FjR7eo99yFxw441oGWRkgtc/Ix1nGNmjmSgs7YB03MKC52U/2KcZ7OF3aDbLZdTwbSH6TDV6RznQkW4T+6+EqCdsOKY119e6f113B6PcoRbqTKx2TZ5hLMDbZfLfzI9VJlzpgxXSZGIIRFR+0sALyYyyWP0TDNiZA6JAkn/fGiJTjtf/DGaiRH6V6Wrb4LyeIxuw17TH1r/F/qT/qSDrjYfRsea8FhXfdA2MqSnvqOOGt3QsEskdNHHaCFBNrRBmp4CpWu8uhat5/oYPdK40LKl7UAD9D4CtDu7VcO8JZdpnI7DMUtGHxMHxX+/X0YmJHDf6A2bPe0R6MkdCVtMlst7jPctHw56yLTSaHXym1fMxK259QcF1k41qSqfeXWny3vMl/eY2Oiu/0JwrYnSjnbtfVFSHIPNRjgxyzzNmHc8jZNMcCvVdv6ddE9909uvQMe65ZqWgnsocLNkvMc482rku+mgaClUoItIEtE/fl7m87kUZiGVjdnWY1jb7q4+Irl1qr18N3BVlecfv/wN4W2ZJreJKGMAAAAASUVORK5CYII='
+    ].forEach(function(base64, index) {
+        if ( index > 0 ) {
+            config.BLOCK_COLORS[index] = new Image();
+            config.BLOCK_COLORS[index].src = base64;
+        }
+    });
+}
 
 
 // Server configuration
@@ -182,6 +182,9 @@ var RTCPeerConnection     = window.RTCPeerConnection     || window.webkitRTCPeer
     RTCIceCandidate       = window.RTCIceCandidate       || window.webkitRTCIceCandidate       || window.mozRTCIceCandidate,
     WebSocket             = window.WebSocket             || window.mozWebSocket;
 
+var BYTES_PER_PACKET   = 64*1024;
+var DATA_END_SIGNATURE = '\0';
+
 function error(err) {console.log('offer/answer error');}
 
 PeerConnection = Event.implement(function() {
@@ -209,11 +212,11 @@ PeerConnection = Event.implement(function() {
     GameEvent.on('playerSelected', function(evt) {
         var player = evt.data;
 
-        this.sendOffer(player.uuid);
+        this.sendOffer(player);
     }.bind(this));
 });
 
-PeerConnection.prototype.sendOffer = function(uuid) {
+PeerConnection.prototype.sendOffer = function(player) {
     var peer = this.peer,
         ws   = this.webSocket,
         me   = this.uuid;
@@ -226,7 +229,9 @@ PeerConnection.prototype.sendOffer = function(uuid) {
             ws.send(JSON.stringify({
                 "sdp":  sdp,
                 "from": me,
-                "to":   uuid
+                "to":   player.uuid,
+                "image": player.image,
+                "name": player.name
             }));
         });
     }, error);
@@ -236,8 +241,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
     var peer = this.peer,
         ws   = this.webSocket,
         uuid = this.uuid,
-        that = this,
-        playerName = prompt('Input your player name') || 'unknown';
+        that = this;
 
     ws.onmessage = function(evt) {
         var message = JSON.parse(evt.data),
@@ -248,21 +252,38 @@ PeerConnection.prototype.setWebSocketEvents = function() {
             PlayerList.update(message.uuids);
         }
 
+        if ( "rejected" in message ) {
+            if ( message.to === uuid ) {
+                GameEvent.trigger("playerRejected");
+            }
+        }
+
         if ( message.sdp && message.to && message.to === uuid) {
             if ( ! that.remotePlayer ) {
                 sdp = new RTCSessionDescription(message.sdp);
                 that.remotePlayer = message.from;
                 if ( sdp.type === 'offer' ) {
-                    peer.setRemoteDescription(sdp, function() {
-                        peer.createAnswer(function(localSdp) {
-                            peer.setLocalDescription(localSdp, function() {
-                                ws.send(JSON.stringify({
-                                    "sdp":  localSdp,
-                                    "from": uuid,
-                                    "to":   that.remotePlayer
-                                }));
-                            });
-                        }, error);
+                    Modal.confirm({
+                        msg: "Offered from: " + message.name,
+                        image: message.image
+                    }, function() {
+                        peer.setRemoteDescription(sdp, function() {
+                            peer.createAnswer(function(localSdp) {
+                                peer.setLocalDescription(localSdp, function() {
+                                    ws.send(JSON.stringify({
+                                        "sdp":  localSdp,
+                                        "from": uuid,
+                                        "to":   that.remotePlayer
+                                    }));
+                                });
+                            }, error);
+                        });
+                    }, function() {
+                        ws.send(JSON.stringify({
+                            "from": uuid,
+                            "to":   message.from,
+                            "rejected": true
+                        }));
                     });
                 } else if ( sdp.type === 'answer' ) {
                     peer.setRemoteDescription(sdp, function() {
@@ -277,16 +298,12 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                 }
             }
         } else if ( message.candidate ) {
-            candidate = new RTCIceCandidate(message.candidate);
-            peer.addIceCandidate(candidate);
+            try {
+                candidate = new RTCIceCandidate(message.candidate);
+                peer.addIceCandidate(candidate);
+            } catch (e) {}
         }
     };
-
-    ws.send(JSON.stringify({
-        'uuid': uuid,
-        'name': playerName,
-        'type': 'add'
-    }));
 
     window.onbeforeunload = function() {
         ws.send(JSON.stringify({
@@ -295,7 +312,19 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         }));
     };
 
-    PlayerList.setPlayer(playerName);
+    Layer.show("");
+    UserName.create(function(user) {
+
+        ws.send(JSON.stringify({
+            'uuid': uuid,
+            'name': user.screen_name,
+            'image': user.profile_image_url,
+            'type': 'add'
+        }));
+
+
+        PlayerList.setPlayer(user.screen_name);
+    });
 
 };
 
@@ -324,7 +353,21 @@ PeerConnection.prototype.send = function(data) {
         throw new Error('DataChannel not connected.');
     }
 
-    this.dataChannel.send(data);
+    if ( ! data || data === "undefined" ) {
+        return;
+    }
+
+    var buffer = "",
+        pointer = 0;
+
+    data += DATA_END_SIGNATURE;
+    // UDP accept 64KB/packet. so, we send chunk
+    do {
+        buffer = data.slice(pointer, BYTES_PER_PACKET);
+        this.dataChannel.send(buffer);
+        pointer += BYTES_PER_PACKET;
+        data = data.slice(pointer);
+    } while ( data.length > BYTES_PER_PACKET );
 };
 
 PeerConnection.prototype.generateUUID = function() {
@@ -341,13 +384,20 @@ PeerConnection.prototype.generateUUID = function() {
 };
 
 PeerConnection.prototype.initDataChannel = function() {
+    var buffer = "";
+
     this.dataChannel.onmessage = function(evt) {
         // Check strict data-uri string transfered
         if ( evt.data ) {
-            if ( evt.data === 'LOSE' ) {
+            if ( evt.data.slice(0, 4) === 'LOSE' ) {
                 GameEvent.trigger('winGame');
             } else {
-                GameEvent.trigger('stageTransfer', evt.data);
+                if ( evt.data[evt.data.length-1] === DATA_END_SIGNATURE ) {
+                    GameEvent.trigger('stageTransfer', buffer + evt.data.slice(0, -1));
+                    buffer = "";
+                } else {
+                    buffer += evt.data;
+                }
             }
         }
     };
@@ -382,14 +432,22 @@ function update(players) {
         size = players.length,
         i    = 0,
         player,
-        li;
+        li,
+        img;
+
+    ul.className = "user-others-list";
 
     for ( ; i < size; ++i ) {
         player = players[i];
-        if ( player.uuid === uuid ) {
+        if ( uuid &&  player.uuid === uuid ) {
             continue;
         }
         li = doc.createElement('li');
+        img = doc.createElement('img');
+        img.src = player.image;
+        img.width = 40;
+        img.height = 40;
+        li.appendChild(img);
         li.appendChild(doc.createTextNode(player.name));
         li.setAttribute('data-uuid', player.uuid);
         if ( player.playing > 0 ) {
@@ -442,13 +500,24 @@ function drawPlayerName(ctx) {
 }
 
 node.addEventListener('click', function(evt) {
-    var uuid = evt.target.getAttribute('data-uuid');
+    var uuid = evt.target.getAttribute('data-uuid'),
+        element = evt.target;
 
     evt.stopPropagation();
 
-    if ( evt.target.tagName === 'LI' && uuid && ! evt.target.hasAttribute('data-playing') ) {
-        GameEvent.trigger('playerSelected', {uuid: uuid, name: evt.target.firstChild.nodeValue});
-        node.style.visibility = 'hidden';
+    if ( element.tagName === "IMG" ) {
+        element = element.parentNode;
+    }
+
+    if ( element.tagName === 'LI' && uuid && ! element.hasAttribute('data-playing') ) {
+        GameEvent.trigger('playerSelected', {
+            uuid: uuid,
+            name: element.lastChild.nodeValue,
+            image: element.firstChild.src
+        });
+        Modal.dialog({
+            msg: "Sending offer..."
+        });
     }
 });
 
@@ -626,8 +695,9 @@ function draw(ctx) {
     for ( i = 0; i < y; ++i ) {
         for ( j = 0; j < x; ++j ) {
             if ( matrix[i][j] > 0 ) {
-                ctx.fillStyle = color[matrix[i][j]];
-                ctx.fillRect(j * size, i * size, size, size);
+                //ctx.fillStyle = color[matrix[i][j]];
+                //ctx.fillRect(j * size, i * size, size, size);
+                ctx.drawImage(color[matrix[i][j]], j*size, i*size, size, size);
             }
         }
     }
@@ -772,7 +842,7 @@ BlockInterface.prototype.draw = function(ctx, isFirst) {
         size  = Config.BLOCK_SIZE,
         i, j, x, y;
 
-    ctx.fillStyle    = this.color;
+    //ctx.fillStyle    = this.color;
     this.drawHistory = [];
 
     for ( i = 0; i < my; ++i ) {
@@ -780,7 +850,8 @@ BlockInterface.prototype.draw = function(ctx, isFirst) {
             if ( mm[i][j] > 0 ) {
                 y = (py + i) * size;
                 x = (px + j) * size;
-                ctx.fillRect(x, y, size, size);
+                ctx.drawImage(this.color, x, y, size, size);
+                //ctx.fillRect(x, y, size, size);
                 this.drawHistory[this.drawHistory.length] = [x, y];
             }
         }
@@ -807,9 +878,10 @@ Block.Convex.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 3) / 2,
         pointY = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX + size, pointY, size, size);
-    ctx.fillRect(pointX, pointY + size, size * 3, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY + size, size, size);
 };
 
 Block.Line = Block.implement(function(blockID) {
@@ -825,8 +897,10 @@ Block.Line.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 4) / 2,
         pointY = (160 - size) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX, pointY, size * 4, size);
+    ctx.drawImage(this.color, pointX, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size + size, pointY, size,  size);
 };
 Block.LLeft = Block.implement(function(blockID) {
     this.blockID = blockID;
@@ -842,9 +916,10 @@ Block.LLeft.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 3) / 2,
         pointY = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX, pointY, size * 3, size);
-    ctx.fillRect(pointX, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX, pointY + size, size, size);
 };
 Block.LRight = Block.implement(function(blockID) {
     this.blockID = blockID;
@@ -860,9 +935,10 @@ Block.LRight.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 3) / 2,
         pointY = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX, pointY, size * 3, size);
-    ctx.fillRect(pointX + size * 2, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY + size, size, size);
 };
 Block.Square = Block.implement(function(blockID) {
     this.blockID = blockID;
@@ -877,8 +953,10 @@ Block.Square.prototype.drawNext = function(ctx) {
     var size  = Config.BLOCK_SIZE,
         point = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(point, point, size * 2, size * 2);
+    ctx.drawImage(this.color, point, point, size, size);
+    ctx.drawImage(this.color, point, point + size, size, size);
+    ctx.drawImage(this.color, point + size, point + size, size, size);
+    ctx.drawImage(this.color, point + size, point, size, size);
 };
 Block.ZLeft = Block.implement(function(blockID) {
     this.blockID = blockID;
@@ -894,9 +972,10 @@ Block.ZLeft.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 3) / 2,
         pointY = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX, pointY, size * 2, size);
-    ctx.fillRect(pointX + size, pointY + size, size * 2, size);
+    ctx.drawImage(this.color, pointX, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY + size, size, size);
 };
 
 Block.ZRight = Block.implement(function(blockID) {
@@ -913,9 +992,10 @@ Block.ZRight.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 3) / 2,
         pointY = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX + size, pointY, size * 2, size);
-    ctx.fillRect(pointX, pointY + size, size * 2, size);
+    ctx.drawImage(this.color, pointX, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY, size, size);
 };
 
 
@@ -1058,7 +1138,11 @@ img.width  = 300;
 img.height = 600;
 
 Enemy.setView = function(base64Data) {
-    img.src = base64Data.data;
+    if ( typeof base64Data === "string" ) {
+        img.src = base64Data;
+    } else {
+        img.src = base64Data.data;
+    }
 };
 
 
@@ -1111,13 +1195,12 @@ Tetris.start = function(stage, width, height, isDuel) {
 
                     --times;
                 });
-            }),
-            msg = document.querySelector('.message');
+            });
 
             Stage.tick();
             Stage.addQueue(new CountDown());
-            msg.parentNode.removeChild(msg);
-            PlayerList.hide();
+            UserName.hide();
+            Modal.hideAll();
         });
     } else {
         Stage.tick();
@@ -1184,7 +1267,7 @@ Tetris.prototype.timerUpdate = function() {
                 Stage.removeQueue(instance);
                 that.lock = false;
                 GameEvent.trigger('putBlock');
-                Enemy.setView(canvas.toDataURL());
+                //Enemy.setView({data: canvas.toDataURL()});
             });
         });
         Stage.addQueue(new queue());
@@ -1265,13 +1348,170 @@ Tetris.prototype.setGameEvents = function() {
 };
 
 
+var GameTitle = {};
+(function() {
+
+    GameTitle.create = function() {
+        var title = document.getElementById("gameTitle"),
+            one   = title.querySelector(".player-single"),
+            two   = title.querySelector(".player-double");
+
+        Layer.show("");
+        title.style.display = "block";
+
+        one.addEventListener("click", function() {
+            Layer.hide();
+            title.style.display = "none";
+            Tetris.start(document.querySelector('.player'), 300, 600, false);
+        });
+        two.addEventListener("click", function() {
+            title.style.display = "none";
+            Tetris.start(document.querySelector('.player'), 300, 600, true);
+        });
+    };
+
+})();
+
+var UserName;
+(function() {
+
+    UserName = function(callback) {
+        this.selfUser = document.querySelector(".user-self");
+        this.others   = document.getElementById("players");
+        this.callback = callback;
+
+        this.init();
+    }
+
+    UserName.prototype.init = function() {
+        var u = localStorage.getItem("tetris_user");
+        if ( u ) {
+            var json = JSON.parse(u);
+            this.selfUser.innerHTML= '<img src="' + json.profile_image_url + '" width="200" height="200">';
+            this.callback(json);
+            return;
+        }
+
+        var that = this;
+        window.authCallback = function(user) {
+            that.selfUser.innerHTML= '<img src="' + user.profile_image_url + '" width="200" height="200">';
+            that.callback(user);
+            localStorage.setItem("tetris_user", JSON.stringify(user));
+            window.authCallback = null;
+        };
+        var signin = document.querySelector(".signin");
+        if ( signin ) {
+            signin.addEventListener("click", function(evt) {
+                evt.preventDefault();
+                window.open(signin.href, "signin", "width=500,height=500,resizable=no,status=no,scrollbars=no");
+            });
+        }
+    }
+
+    UserName.create = function(callback) {
+        var users = document.getElementById("users");
+
+        users.style.display = "block";
+        new UserName(callback);
+
+    };
+
+    UserName.hide = function() {
+        var users = document.getElementById("users");
+
+        users.style.display = "none";
+    };
+
+
+
+})();
+
+var Modal;
+(function() {
+
+    var tmpl = Retriever.make(document.getElementById("tetris-modal").innerHTML);
+
+    Modal = function(type, msg, resolve, reject) {
+        this.type = type;
+        this.msg = msg;
+        this.resolve = resolve;
+        this.reject = reject;
+
+        this.init();
+    };
+
+    Modal.prototype.init = function() {
+        var div = document.createElement("div");
+        var that = this;
+
+        div.className = "modal-frame " + this.type;
+        div.innerHTML = tmpl.parse(this.msg);
+
+        Layer.show("");
+        var ok = div.querySelector(".ok");
+        var ng = div.querySelector(".ng");
+
+        switch ( this.type ) {
+            case "dialog":
+                ok.style.display = "none";
+                ng.style.display = "none";
+                break;
+
+            case "confirm":
+                ok.addEventListener("click", function() {
+                    that.resolve && that.resolve();
+                    document.body.removeChild(div);
+                });
+                ng.addEventListener("click", function() {
+                    that.reject && that.reject();
+                    document.body.removeChild(div);
+                });
+                break;
+            case "alert":
+                ng.style.display = "none";
+                ok.addEventListener("click", function() {
+                    that.resolve && that.resolve();
+                    document.body.removeChild(div);
+                });
+                break;
+        }
+        document.body.appendChild(div);
+    };
+
+    Modal.confirm = function(msg, resolve, reject) {
+        return new Modal("confirm", msg, resolve, reject);
+    };
+    Modal.alert = function(msg, resolve, reject) {
+        return new Modal("alert", msg, resolve, reject);
+    };
+    Modal.dialog = function(msg, resolve, reject) {
+        return new Modal("dialog", msg, resolve, reject);
+    };
+
+    Modal.hideAll = function() {
+        [].forEach.call(document.querySelectorAll(".modal-frame"), function(dialog) {
+            document.body.removeChild(dialog);
+        });
+    };
+
+    GameEvent.on("playerRejected", function() {
+        [].forEach.call(document.querySelectorAll(".dialog"), function(dialog) {
+            document.body.removeChild(dialog);
+        });
+        Modal.alert({
+            msg: "Offser rejected"
+        });
+    });
+
+})();
+
 
 global.Tetris = Tetris;
 global.stage  = Stage;
 
-Tetris.start(document.querySelector('.player'), 300, 600, true);
-
-
+//Tetris.start(document.querySelector('.player'), 300, 600, false);
 document.body.style.height = window.innerHeight + 'px';
+
+GameTitle.create();
 
 })(this);

@@ -12,7 +12,8 @@ Block.ZRight.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 3) / 2,
         pointY = (160 - size * 2) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX + size, pointY, size * 2, size);
-    ctx.fillRect(pointX, pointY + size, size * 2, size);
+    ctx.drawImage(this.color, pointX, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY + size, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY, size, size);
 };

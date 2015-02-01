@@ -116,7 +116,7 @@ BlockInterface.prototype.draw = function(ctx, isFirst) {
         size  = Config.BLOCK_SIZE,
         i, j, x, y;
 
-    ctx.fillStyle    = this.color;
+    //ctx.fillStyle    = this.color;
     this.drawHistory = [];
 
     for ( i = 0; i < my; ++i ) {
@@ -124,7 +124,8 @@ BlockInterface.prototype.draw = function(ctx, isFirst) {
             if ( mm[i][j] > 0 ) {
                 y = (py + i) * size;
                 x = (px + j) * size;
-                ctx.fillRect(x, y, size, size);
+                ctx.drawImage(this.color, x, y, size, size);
+                //ctx.fillRect(x, y, size, size);
                 this.drawHistory[this.drawHistory.length] = [x, y];
             }
         }

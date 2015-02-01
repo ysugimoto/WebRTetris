@@ -24,14 +24,22 @@ function update(players) {
         size = players.length,
         i    = 0,
         player,
-        li;
+        li,
+        img;
+
+    ul.className = "user-others-list";
 
     for ( ; i < size; ++i ) {
         player = players[i];
-        if ( player.uuid === uuid ) {
+        if ( uuid &&  player.uuid === uuid ) {
             continue;
         }
         li = doc.createElement('li');
+        img = doc.createElement('img');
+        img.src = player.image;
+        img.width = 40;
+        img.height = 40;
+        li.appendChild(img);
         li.appendChild(doc.createTextNode(player.name));
         li.setAttribute('data-uuid', player.uuid);
         if ( player.playing > 0 ) {
@@ -84,13 +92,24 @@ function drawPlayerName(ctx) {
 }
 
 node.addEventListener('click', function(evt) {
-    var uuid = evt.target.getAttribute('data-uuid');
+    var uuid = evt.target.getAttribute('data-uuid'),
+        element = evt.target;
 
     evt.stopPropagation();
 
-    if ( evt.target.tagName === 'LI' && uuid && ! evt.target.hasAttribute('data-playing') ) {
-        GameEvent.trigger('playerSelected', {uuid: uuid, name: evt.target.firstChild.nodeValue});
-        node.style.visibility = 'hidden';
+    if ( element.tagName === "IMG" ) {
+        element = element.parentNode;
+    }
+
+    if ( element.tagName === 'LI' && uuid && ! element.hasAttribute('data-playing') ) {
+        GameEvent.trigger('playerSelected', {
+            uuid: uuid,
+            name: element.lastChild.nodeValue,
+            image: element.firstChild.src
+        });
+        Modal.dialog({
+            msg: "Sending offer..."
+        });
     }
 });
 

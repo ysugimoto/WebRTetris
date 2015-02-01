@@ -1,0 +1,13 @@
+{
+    "name": "sugimoto/php",
+    "authors": [
+        {
+            "name": "sugimoto",
+            "email": "sugimoto@wnotes.net"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "abraham/twitteroauth": "0.4.1"
+    }
+}

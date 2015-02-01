@@ -11,6 +11,8 @@ Block.Line.prototype.drawNext = function(ctx) {
         pointX = (160 - size * 4) / 2,
         pointY = (160 - size) / 2;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(pointX, pointY, size * 4, size);
+    ctx.drawImage(this.color, pointX, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size, pointY, size, size);
+    ctx.drawImage(this.color, pointX + size + size + size, pointY, size,  size);
 };

@@ -6,6 +6,9 @@ var RTCPeerConnection     = window.RTCPeerConnection     || window.webkitRTCPeer
     RTCIceCandidate       = window.RTCIceCandidate       || window.webkitRTCIceCandidate       || window.mozRTCIceCandidate,
     WebSocket             = window.WebSocket             || window.mozWebSocket;
 
+var BYTES_PER_PACKET   = 64*1024;
+var DATA_END_SIGNATURE = '\0';
+
 function error(err) {console.log('offer/answer error');}
 
 PeerConnection = Event.implement(function() {
@@ -33,11 +36,11 @@ PeerConnection = Event.implement(function() {
     GameEvent.on('playerSelected', function(evt) {
         var player = evt.data;
 
-        this.sendOffer(player.uuid);
+        this.sendOffer(player);
     }.bind(this));
 });
 
-PeerConnection.prototype.sendOffer = function(uuid) {
+PeerConnection.prototype.sendOffer = function(player) {
     var peer = this.peer,
         ws   = this.webSocket,
         me   = this.uuid;
@@ -50,7 +53,9 @@ PeerConnection.prototype.sendOffer = function(uuid) {
             ws.send(JSON.stringify({
                 "sdp":  sdp,
                 "from": me,
-                "to":   uuid
+                "to":   player.uuid,
+                "image": player.image,
+                "name": player.name
             }));
         });
     }, error);
@@ -60,8 +65,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
     var peer = this.peer,
         ws   = this.webSocket,
         uuid = this.uuid,
-        that = this,
-        playerName = prompt('Input your player name') || 'unknown';
+        that = this;
 
     ws.onmessage = function(evt) {
         var message = JSON.parse(evt.data),
@@ -72,21 +76,38 @@ PeerConnection.prototype.setWebSocketEvents = function() {
             PlayerList.update(message.uuids);
         }
 
+        if ( "rejected" in message ) {
+            if ( message.to === uuid ) {
+                GameEvent.trigger("playerRejected");
+            }
+        }
+
         if ( message.sdp && message.to && message.to === uuid) {
             if ( ! that.remotePlayer ) {
                 sdp = new RTCSessionDescription(message.sdp);
                 that.remotePlayer = message.from;
                 if ( sdp.type === 'offer' ) {
-                    peer.setRemoteDescription(sdp, function() {
-                        peer.createAnswer(function(localSdp) {
-                            peer.setLocalDescription(localSdp, function() {
-                                ws.send(JSON.stringify({
-                                    "sdp":  localSdp,
-                                    "from": uuid,
-                                    "to":   that.remotePlayer
-                                }));
-                            });
-                        }, error);
+                    Modal.confirm({
+                        msg: "Offered from: " + message.name,
+                        image: message.image
+                    }, function() {
+                        peer.setRemoteDescription(sdp, function() {
+                            peer.createAnswer(function(localSdp) {
+                                peer.setLocalDescription(localSdp, function() {
+                                    ws.send(JSON.stringify({
+                                        "sdp":  localSdp,
+                                        "from": uuid,
+                                        "to":   that.remotePlayer
+                                    }));
+                                });
+                            }, error);
+                        });
+                    }, function() {
+                        ws.send(JSON.stringify({
+                            "from": uuid,
+                            "to":   message.from,
+                            "rejected": true
+                        }));
                     });
                 } else if ( sdp.type === 'answer' ) {
                     peer.setRemoteDescription(sdp, function() {
@@ -101,16 +122,12 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                 }
             }
         } else if ( message.candidate ) {
-            candidate = new RTCIceCandidate(message.candidate);
-            peer.addIceCandidate(candidate);
+            try {
+                candidate = new RTCIceCandidate(message.candidate);
+                peer.addIceCandidate(candidate);
+            } catch (e) {}
         }
     };
-
-    ws.send(JSON.stringify({
-        'uuid': uuid,
-        'name': playerName,
-        'type': 'add'
-    }));
 
     window.onbeforeunload = function() {
         ws.send(JSON.stringify({
@@ -119,7 +136,19 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         }));
     };
 
-    PlayerList.setPlayer(playerName);
+    Layer.show("");
+    UserName.create(function(user) {
+
+        ws.send(JSON.stringify({
+            'uuid': uuid,
+            'name': user.screen_name,
+            'image': user.profile_image_url,
+            'type': 'add'
+        }));
+
+
+        PlayerList.setPlayer(user.screen_name);
+    });
 
 };
 
@@ -148,7 +177,21 @@ PeerConnection.prototype.send = function(data) {
         throw new Error('DataChannel not connected.');
     }
 
-    this.dataChannel.send(data);
+    if ( ! data || data === "undefined" ) {
+        return;
+    }
+
+    var buffer = "",
+        pointer = 0;
+
+    data += DATA_END_SIGNATURE;
+    // UDP accept 64KB/packet. so, we send chunk
+    do {
+        buffer = data.slice(pointer, BYTES_PER_PACKET);
+        this.dataChannel.send(buffer);
+        pointer += BYTES_PER_PACKET;
+        data = data.slice(pointer);
+    } while ( data.length > BYTES_PER_PACKET );
 };
 
 PeerConnection.prototype.generateUUID = function() {
@@ -165,13 +208,20 @@ PeerConnection.prototype.generateUUID = function() {
 };
 
 PeerConnection.prototype.initDataChannel = function() {
+    var buffer = "";
+
     this.dataChannel.onmessage = function(evt) {
         // Check strict data-uri string transfered
         if ( evt.data ) {
-            if ( evt.data === 'LOSE' ) {
+            if ( evt.data.slice(0, 4) === 'LOSE' ) {
                 GameEvent.trigger('winGame');
             } else {
-                GameEvent.trigger('stageTransfer', evt.data);
+                if ( evt.data[evt.data.length-1] === DATA_END_SIGNATURE ) {
+                    GameEvent.trigger('stageTransfer', buffer + evt.data.slice(0, -1));
+                    buffer = "";
+                } else {
+                    buffer += evt.data;
+                }
             }
         }
     };

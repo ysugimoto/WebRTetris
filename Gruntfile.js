@@ -2,8 +2,10 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         sprockets: {
-            files: ["js/src/index.js"],
-            dest: "js/application.js"
+            build: {
+                files: ["js/src/index.js"],
+                dest: "js/application.js"
+            }
         },
         sass: {
             dist: {
