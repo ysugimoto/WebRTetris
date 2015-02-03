@@ -70,6 +70,9 @@ var Modal;
         [].forEach.call(document.querySelectorAll(".modal-frame"), function(dialog) {
             document.body.removeChild(dialog);
         });
+        if ( modalLayer.parentNode ) {
+            document.body.removeChild(modalLayer);
+        }
     };
 
     GameEvent.on("playerRejected", function() {

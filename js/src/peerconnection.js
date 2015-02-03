@@ -84,21 +84,24 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         }
 
         if ( message.sdp && message.to && message.to === uuid) {
-            if ( ! that.remotePlayer ) {
+            if ( ! PlayerList.getRemotePlayer() ) {
                 sdp = new RTCSessionDescription(message.sdp);
-                that.remotePlayer = message.from;
                 if ( sdp.type === 'offer' ) {
                     Modal.confirm({
                         msg: "Offered from: " + message.name,
                         image: message.image
                     }, function() {
+                        PlayerList.setRemotePlayer(message.name, message.image);
                         peer.setRemoteDescription(sdp, function() {
                             peer.createAnswer(function(localSdp) {
                                 peer.setLocalDescription(localSdp, function() {
+                                    var selfPlayer = PlayerList.getPlayer();
                                     ws.send(JSON.stringify({
                                         "sdp":  localSdp,
                                         "from": uuid,
-                                        "to":   that.remotePlayer
+                                        "to":   message.from,
+                                        "name": selfPlayer.name,
+                                        "image": selfPlayer.image
                                     }));
                                 });
                             }, error);
@@ -109,9 +112,10 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                             "to":   message.from,
                             "rejected": true
                         }));
-                        that.remotePlayer = null;
+                        //PlayerList.resetRemotePlayer();
                     });
                 } else if ( sdp.type === 'answer' ) {
+                    PlayerList.setRemotePlayer(message.name, message.image);
                     peer.setRemoteDescription(sdp, function() {
                         GameEvent.trigger('peerConnected');
 

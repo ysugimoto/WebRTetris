@@ -47,6 +47,8 @@ Tetris.start = function(stage, width, height, isDuel) {
                 });
             });
 
+            Enemy.show();
+            PlayerList.loadPlayersImage();
             Stage.tick();
             Stage.addQueue(new CountDown());
             UserName.hide();
@@ -92,7 +94,7 @@ Tetris.prototype.timerUpdate = function() {
 
     Stage.draw(ctx);
     block.draw(ctx);
-    //PlayerList.drawPlayerName(ctx);
+    //PlayerList.drawPlayer(ctx);
 
     if ( this.peer ) {
         this.peer.send(this.canvas.toDataURL());

@@ -260,21 +260,24 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         }
 
         if ( message.sdp && message.to && message.to === uuid) {
-            if ( ! that.remotePlayer ) {
+            if ( ! PlayerList.getRemotePlayer() ) {
                 sdp = new RTCSessionDescription(message.sdp);
-                that.remotePlayer = message.from;
                 if ( sdp.type === 'offer' ) {
                     Modal.confirm({
                         msg: "Offered from: " + message.name,
                         image: message.image
                     }, function() {
+                        PlayerList.setRemotePlayer(message.name, message.image);
                         peer.setRemoteDescription(sdp, function() {
                             peer.createAnswer(function(localSdp) {
                                 peer.setLocalDescription(localSdp, function() {
+                                    var selfPlayer = PlayerList.getPlayer();
                                     ws.send(JSON.stringify({
                                         "sdp":  localSdp,
                                         "from": uuid,
-                                        "to":   that.remotePlayer
+                                        "to":   message.from,
+                                        "name": selfPlayer.name,
+                                        "image": selfPlayer.image
                                     }));
                                 });
                             }, error);
@@ -285,9 +288,10 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                             "to":   message.from,
                             "rejected": true
                         }));
-                        that.remotePlayer = null;
+                        //PlayerList.resetRemotePlayer();
                     });
                 } else if ( sdp.type === 'answer' ) {
+                    PlayerList.setRemotePlayer(message.name, message.image);
                     peer.setRemoteDescription(sdp, function() {
                         GameEvent.trigger('peerConnected');
 
@@ -416,7 +420,9 @@ var doc    = document,
     locked = false,
     uuid,
     playerName,
-    playerImage;
+    playerImage,
+    remotePlayerName,
+    remotePlayerImage;
 
 PlayerList = {
     update: update,
@@ -427,6 +433,9 @@ PlayerList = {
     show: show,
     setPlayer: setPlayer,
     getPlayer: getPlayer,
+    setRemotePlayer: setRemotePlayer,
+    getRemotePlayer: getRemotePlayer,
+    loadPlayersImage: loadPlayersImage,
     drawPlayerName: drawPlayerName
 };
 
@@ -494,6 +503,42 @@ function setPlayer(name, image) {
 
 function getPlayer(name) {
     return  ( playerName ) ? { name: playerName, image: playerImage } : false;
+}
+
+function setRemotePlayer(name, image) {
+    remotePlayerName = name;
+    remotePlayerImage = image;
+}
+
+function getRemotePlayer(name) {
+    return  ( remotePlayerName ) ? { name: remotePlayerName, image: remotePlayerImage } : false;
+}
+
+function resetRemotePlayer() {
+    remotePlayerName = null;
+    remotePlayerImage = null;
+}
+
+function loadPlayersImage() {
+    if ( playerImage ) {
+        (function(img, stage) {
+            img.className = "player";
+            img.width = 300;
+            img.height = 300;
+            img.src = playerImage;
+            stage.appendChild(img);
+        })(new Image(), document.querySelector("#game .player"));
+    }
+
+    if ( remotePlayerImage ) {
+        (function(img, stage) {
+            img.className = "player";
+            img.width = 300;
+            img.height = 300;
+            img.src = remotePlayerImage;
+            stage.appendChild(img);
+        })(new Image(), document.querySelector("#game .enemy"));
+    }
 }
 
 function drawPlayerName(ctx) {
@@ -1142,9 +1187,15 @@ var doc   = document,
     enemy = doc.querySelector('.enemy'),
     img   = new Image();
 
-enemy.appendChild(img);
+img.className = "enemy";
 img.width  = 300;
 img.height = 600;
+img.style.display = "none";
+enemy.appendChild(img);
+
+Enemy.show = function() {
+    img.style.display = "inline-block";
+};
 
 Enemy.setView = function(base64Data) {
     if ( typeof base64Data === "string" ) {
@@ -1206,6 +1257,8 @@ Tetris.start = function(stage, width, height, isDuel) {
                 });
             });
 
+            Enemy.show();
+            PlayerList.loadPlayersImage();
             Stage.tick();
             Stage.addQueue(new CountDown());
             UserName.hide();
@@ -1251,7 +1304,7 @@ Tetris.prototype.timerUpdate = function() {
 
     Stage.draw(ctx);
     block.draw(ctx);
-    //PlayerList.drawPlayerName(ctx);
+    //PlayerList.drawPlayer(ctx);
 
     if ( this.peer ) {
         this.peer.send(this.canvas.toDataURL());
@@ -1507,6 +1560,9 @@ var Modal;
         [].forEach.call(document.querySelectorAll(".modal-frame"), function(dialog) {
             document.body.removeChild(dialog);
         });
+        if ( modalLayer.parentNode ) {
+            document.body.removeChild(modalLayer);
+        }
     };
 
     GameEvent.on("playerRejected", function() {

@@ -6,7 +6,9 @@ var doc    = document,
     locked = false,
     uuid,
     playerName,
-    playerImage;
+    playerImage,
+    remotePlayerName,
+    remotePlayerImage;
 
 PlayerList = {
     update: update,
@@ -17,6 +19,9 @@ PlayerList = {
     show: show,
     setPlayer: setPlayer,
     getPlayer: getPlayer,
+    setRemotePlayer: setRemotePlayer,
+    getRemotePlayer: getRemotePlayer,
+    loadPlayersImage: loadPlayersImage,
     drawPlayerName: drawPlayerName
 };
 
@@ -84,6 +89,42 @@ function setPlayer(name, image) {
 
 function getPlayer(name) {
     return  ( playerName ) ? { name: playerName, image: playerImage } : false;
+}
+
+function setRemotePlayer(name, image) {
+    remotePlayerName = name;
+    remotePlayerImage = image;
+}
+
+function getRemotePlayer(name) {
+    return  ( remotePlayerName ) ? { name: remotePlayerName, image: remotePlayerImage } : false;
+}
+
+function resetRemotePlayer() {
+    remotePlayerName = null;
+    remotePlayerImage = null;
+}
+
+function loadPlayersImage() {
+    if ( playerImage ) {
+        (function(img, stage) {
+            img.className = "player";
+            img.width = 300;
+            img.height = 300;
+            img.src = playerImage;
+            stage.appendChild(img);
+        })(new Image(), document.querySelector("#game .player"));
+    }
+
+    if ( remotePlayerImage ) {
+        (function(img, stage) {
+            img.className = "player";
+            img.width = 300;
+            img.height = 300;
+            img.src = remotePlayerImage;
+            stage.appendChild(img);
+        })(new Image(), document.querySelector("#game .enemy"));
+    }
 }
 
 function drawPlayerName(ctx) {

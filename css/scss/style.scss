@@ -23,6 +23,21 @@ body {
     float: left;
     background-color: rgba(255, 255, 255, 0.4);
     border: solid 10px rgba(0, 0, 0, 0.9);
+    position: relative;
+
+    .player {
+        position: absolute;
+        opacity: 0.5;
+        top: 0;
+        left: 0;
+        z-index: 3;
+    }
+
+    > canvas,
+    .enemy {
+        position: relative;
+        z-index: 5;
+    }
 }
 
 .info {
@@ -74,6 +89,7 @@ body {
 
 #layer {
     position: absolute;
+    z-index: 10;
     top: 0;
     left: 0;
     width: 100%;
@@ -338,6 +354,7 @@ body {
 
 .guide {
     position: absolute;
+    z-index: 9;
     top: 10px;
     right: 10px;
     padding: 20px;
