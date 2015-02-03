@@ -28,6 +28,7 @@ Controller.prototype.handleEvent = function(evt) {
                 break;
 
             case 65: // rotate left
+            case 38:
                 GameEvent.trigger('rotateLeft');
                 break;
 

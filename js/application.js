@@ -226,12 +226,13 @@ PeerConnection.prototype.sendOffer = function(player) {
 
     peer.createOffer(function(sdp) {
         peer.setLocalDescription(sdp, function() {
+            var selfPlayer = getPlayer();
             ws.send(JSON.stringify({
                 "sdp":  sdp,
                 "from": me,
                 "to":   player.uuid,
-                "image": player.image,
-                "name": player.name
+                "image": selfPlayer.image,
+                "name": selfPlayer.name
             }));
         });
     }, error);
@@ -323,7 +324,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         }));
 
 
-        PlayerList.setPlayer(user.screen_name);
+        PlayerList.setPlayer(user.screen_name, user.profile_image_url);
     });
 
 };
@@ -413,7 +414,8 @@ var doc    = document,
     node   = doc.getElementById('players'),
     locked = false,
     uuid,
-    playerName;
+    playerName,
+    playerImage;
 
 PlayerList = {
     update: update,
@@ -484,12 +486,13 @@ function show() {
     node.style.display = 'block';
 }
 
-function setPlayer(name) {
+function setPlayer(name, image) {
     playerName = name;
+    playerImage = image;
 }
 
 function getPlayer(name) {
-    return playerName;
+    return  ( playerName ) ? { name: playerName, image: playerImage } : false;
 }
 
 function drawPlayerName(ctx) {
@@ -504,6 +507,10 @@ node.addEventListener('click', function(evt) {
         element = evt.target;
 
     evt.stopPropagation();
+
+    if ( getPlayer() === false ) {
+        return;
+    }
 
     if ( element.tagName === "IMG" ) {
         element = element.parentNode;
@@ -1029,6 +1036,7 @@ Controller.prototype.handleEvent = function(evt) {
                 break;
 
             case 65: // rotate left
+            case 38:
                 GameEvent.trigger('rotateLeft');
                 break;
 
@@ -1430,6 +1438,9 @@ var Modal;
 (function() {
 
     var tmpl = Retriever.make(document.getElementById("tetris-modal").innerHTML);
+    var modalLayer = document.createElement("div");
+
+    modalLayer.className = "modal-layer";
 
     Modal = function(type, msg, resolve, reject) {
         this.type = type;
@@ -1447,7 +1458,6 @@ var Modal;
         div.className = "modal-frame " + this.type;
         div.innerHTML = tmpl.parse(this.msg);
 
-        Layer.show("");
         var ok = div.querySelector(".ok");
         var ng = div.querySelector(".ng");
 
@@ -1461,10 +1471,12 @@ var Modal;
                 ok.addEventListener("click", function() {
                     that.resolve && that.resolve();
                     document.body.removeChild(div);
+                    document.body.removeChild(modalLayer);
                 });
                 ng.addEventListener("click", function() {
                     that.reject && that.reject();
                     document.body.removeChild(div);
+                    document.body.removeChild(modalLayer);
                 });
                 break;
             case "alert":
@@ -1472,10 +1484,12 @@ var Modal;
                 ok.addEventListener("click", function() {
                     that.resolve && that.resolve();
                     document.body.removeChild(div);
+                    document.body.removeChild(modalLayer);
                 });
                 break;
         }
         document.body.appendChild(div);
+        document.body.appendChild(modalLayer);
     };
 
     Modal.confirm = function(msg, resolve, reject) {

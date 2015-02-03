@@ -2,6 +2,9 @@ var Modal;
 (function() {
 
     var tmpl = Retriever.make(document.getElementById("tetris-modal").innerHTML);
+    var modalLayer = document.createElement("div");
+
+    modalLayer.className = "modal-layer";
 
     Modal = function(type, msg, resolve, reject) {
         this.type = type;
@@ -19,7 +22,6 @@ var Modal;
         div.className = "modal-frame " + this.type;
         div.innerHTML = tmpl.parse(this.msg);
 
-        Layer.show("");
         var ok = div.querySelector(".ok");
         var ng = div.querySelector(".ng");
 
@@ -33,10 +35,12 @@ var Modal;
                 ok.addEventListener("click", function() {
                     that.resolve && that.resolve();
                     document.body.removeChild(div);
+                    document.body.removeChild(modalLayer);
                 });
                 ng.addEventListener("click", function() {
                     that.reject && that.reject();
                     document.body.removeChild(div);
+                    document.body.removeChild(modalLayer);
                 });
                 break;
             case "alert":
@@ -44,10 +48,12 @@ var Modal;
                 ok.addEventListener("click", function() {
                     that.resolve && that.resolve();
                     document.body.removeChild(div);
+                    document.body.removeChild(modalLayer);
                 });
                 break;
         }
         document.body.appendChild(div);
+        document.body.appendChild(modalLayer);
     };
 
     Modal.confirm = function(msg, resolve, reject) {

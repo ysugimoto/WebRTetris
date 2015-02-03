@@ -5,7 +5,8 @@ var doc    = document,
     node   = doc.getElementById('players'),
     locked = false,
     uuid,
-    playerName;
+    playerName,
+    playerImage;
 
 PlayerList = {
     update: update,
@@ -76,12 +77,13 @@ function show() {
     node.style.display = 'block';
 }
 
-function setPlayer(name) {
+function setPlayer(name, image) {
     playerName = name;
+    playerImage = image;
 }
 
 function getPlayer(name) {
-    return playerName;
+    return  ( playerName ) ? { name: playerName, image: playerImage } : false;
 }
 
 function drawPlayerName(ctx) {
@@ -96,6 +98,10 @@ node.addEventListener('click', function(evt) {
         element = evt.target;
 
     evt.stopPropagation();
+
+    if ( getPlayer() === false ) {
+        return;
+    }
 
     if ( element.tagName === "IMG" ) {
         element = element.parentNode;

@@ -50,12 +50,13 @@ PeerConnection.prototype.sendOffer = function(player) {
 
     peer.createOffer(function(sdp) {
         peer.setLocalDescription(sdp, function() {
+            var selfPlayer = getPlayer();
             ws.send(JSON.stringify({
                 "sdp":  sdp,
                 "from": me,
                 "to":   player.uuid,
-                "image": player.image,
-                "name": player.name
+                "image": selfPlayer.image,
+                "name": selfPlayer.name
             }));
         });
     }, error);
@@ -147,7 +148,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
         }));
 
 
-        PlayerList.setPlayer(user.screen_name);
+        PlayerList.setPlayer(user.screen_name, user.profile_image_url);
     });
 
 };
