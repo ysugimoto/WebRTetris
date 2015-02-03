@@ -50,7 +50,7 @@ PeerConnection.prototype.sendOffer = function(player) {
 
     peer.createOffer(function(sdp) {
         peer.setLocalDescription(sdp, function() {
-            var selfPlayer = getPlayer();
+            var selfPlayer = PlayerList.getPlayer();
             ws.send(JSON.stringify({
                 "sdp":  sdp,
                 "from": me,
@@ -109,6 +109,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                             "to":   message.from,
                             "rejected": true
                         }));
+                        that.remotePlayer = null;
                     });
                 } else if ( sdp.type === 'answer' ) {
                     peer.setRemoteDescription(sdp, function() {
