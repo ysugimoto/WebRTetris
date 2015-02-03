@@ -1,8 +1,8 @@
 <?php
 
 define("BASEPATH", __DIR__);
-define("TWITTER_CONSUMER_KEY", "3rSwZxuTE0pnnbHAhSnu0g8YR");
-define("TWITTER_CONSUMER_SECRET", "9MXPC6pgaYnjwxZ4RkuCBQ0uHT0RozPsw5FHIWsP49E1d4qavD");
+define("TWITTER_CONSUMER_KEY", "");
+define("TWITTER_CONSUMER_SECRET", "");
 
 session_start("WebRTC_Tetris_Sample");
 session_regenerate_id(true);
