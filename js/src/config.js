@@ -48,6 +48,16 @@ config.HOST           = 'localhost';
 config.HTTP_PORT      = 8889;
 config.WEBSOCKET_PORT = 8124;
 
+// Dummy accounts
+config.dummyAccounts = [
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample1.png', screen_name: 'sample1' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample2.png', screen_name: 'sample2' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample3.png', screen_name: 'sample3' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample4.png', screen_name: 'sample4' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample5.png', screen_name: 'sample5' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample6.png', screen_name: 'sample6' }
+];
+
 Config = config;
 
 // node config

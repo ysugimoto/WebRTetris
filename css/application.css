@@ -211,7 +211,7 @@ body {
     border: solid 2px #333;
     margin: 100px 0 0 80px; }
     #users .user-self .pure-button {
-      margin-top: 80px; }
+      margin-top: 40px; }
   #users .user-others {
     width: 400px;
     float: left;

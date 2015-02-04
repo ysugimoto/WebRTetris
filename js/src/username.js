@@ -32,6 +32,19 @@ var UserName;
                 window.open(signin.href, "signin", "width=500,height=500,resizable=no,status=no,scrollbars=no");
             });
         }
+        var sample = document.querySelector(".signin-sample");
+        if ( sample ) {
+            sample.addEventListener("click", function(evt) {
+                // dummy
+                var rand = Math.floor(Math.random() * Config.dummyAccounts.length),
+                    user = Config.dummyAccounts[rand];
+
+                evt.preventDefault();
+                that.selfUser.innerHTML= '<img src="' + user.profile_image_url + '" width="200" height="200">';
+                that.callback(user);
+                localStorage.setItem("tetris_user", JSON.stringify(user));
+            });
+        }
     }
 
     UserName.create = function(callback) {

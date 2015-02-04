@@ -51,6 +51,16 @@ config.HOST           = 'localhost';
 config.HTTP_PORT      = 8889;
 config.WEBSOCKET_PORT = 8124;
 
+// Dummy accounts
+config.dummyAccounts = [
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample1.png', screen_name: 'sample1' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample2.png', screen_name: 'sample2' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample3.png', screen_name: 'sample3' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample4.png', screen_name: 'sample4' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample5.png', screen_name: 'sample5' },
+    { profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/sugimoto/sample_accounts/sample6.png', screen_name: 'sample6' }
+];
+
 Config = config;
 
 // node config
@@ -1466,6 +1476,19 @@ var UserName;
             signin.addEventListener("click", function(evt) {
                 evt.preventDefault();
                 window.open(signin.href, "signin", "width=500,height=500,resizable=no,status=no,scrollbars=no");
+            });
+        }
+        var sample = document.querySelector(".signin-sample");
+        if ( sample ) {
+            sample.addEventListener("click", function(evt) {
+                // dummy
+                var rand = Math.floor(Math.random() * Config.dummyAccounts.length),
+                    user = Config.dummyAccounts[rand];
+
+                evt.preventDefault();
+                that.selfUser.innerHTML= '<img src="' + user.profile_image_url + '" width="200" height="200">';
+                that.callback(user);
+                localStorage.setItem("tetris_user", JSON.stringify(user));
             });
         }
     }
