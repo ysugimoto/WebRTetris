@@ -58,7 +58,7 @@ PeerConnection.prototype.sendOffer = function(player) {
                 "image": selfPlayer.image,
                 "name": selfPlayer.name
             }));
-        });
+        }, error);
     }, error);
 };
 
@@ -103,7 +103,7 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                                         "name": selfPlayer.name,
                                         "image": selfPlayer.image
                                     }));
-                                });
+                                }, error);
                             }, error);
                         });
                     }, function() {
@@ -124,13 +124,13 @@ PeerConnection.prototype.setWebSocketEvents = function() {
                             "to": that.remotePlayer,
                             "type": "playing"
                         }));
-                    });
+                    }, error);
                 }
             }
         } else if ( message.candidate ) {
             try {
                 candidate = new RTCIceCandidate(message.candidate);
-                peer.addIceCandidate(candidate);
+                peer.addIceCandidate(candidate, function() {}, error);
             } catch (e) {}
         }
     };
